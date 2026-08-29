@@ -24,7 +24,7 @@
     <div class="row" id="movieList">
         {% for movie in movies %}
         <div class="col-md-4 mb-4">
-            <a href="{% url 'movie_detail' movie.slug %}" class="text-decoration-none text-dark"></a>
+            <a href="{% url 'movie_detail' movie.slug %}" class="text-decoration-none text-dark">
             <div class="card h-100 shadow-sm">
                 <img src="{{ movie.image.url }}" class="card-img-top" alt="{{ movie.name }}"
                     style="height: 300px; object-fit: cover;">
@@ -32,23 +32,22 @@
                     <h5 class="card-title">{{ movie.name }}</h5>
                     <p class="card-text">
                         <i class="fas fa-star text-warning"></i>
-                        {{% if movie.rating %}}
+                        {% if movie.total_ratings %}
                         {{ movie.average_rating}}/5 <small class="text-muted"> ({{movie.total_ratings}} ratings)</small>
                         {% else %}
-                        <small class="text-muted">Not yest rated</small>
+                        <small class="text-muted">Not yet rated</small>
                         {% endif %}
                     </p>
                     <p class="card-text">
                         <small class="text-muted">
 
-                            {% for genre in movie.genre.all %}{{genre.name}}{% if not forloop.last %},{% endif %} {%
-                            endfor %}
+                            {% for genre in movie.genres.all %}{{genre.name}}{% if not forloop.last %},{% endif %} {% endfor %}
                         </small>
                     </p>
                 </div>
                 <div class="card-footer bg-white border-top-0">
                     <span class="btn btn-outline-primary btn-block">
-                        View Details <i class=" fas fa-checron-right" ml-2></i>
+                        View Details <i class=" fas fa-chevron-right ml-2"></i>
                     </span>
                 </div>
             </div>
@@ -72,4 +71,4 @@
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
     }
 </style>
-
+{% endblock %}

@@ -6,6 +6,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
+from datetime import timedelta
 
 
 youtube_id_validator = RegexValidator(
@@ -174,6 +175,7 @@ class Theater(models.Model):
     name = models.CharField(max_length=255)
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='theaters')
     time = models.DateTimeField()
+    price_per_seat = models.DecimalField(max_digits = 7, decimal_places =2, default= 200)
 
     class Meta:
         ordering = ['time']
@@ -183,12 +185,35 @@ class Theater(models.Model):
 
 
 class Seat(models.Model):
+    HOLD_DURATION = timedelta(minutes=2)
+
     theater = models.ForeignKey(Theater, on_delete=models.CASCADE, related_name='seats')
     seat_number = models.CharField(max_length=10)
     is_booked = models.BooleanField(default=False)
+    held_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,on_delete = models.SET_NULL,
+        null = True, blank= True, related_name = 'held_seats'
+    )
+    held_until = models.DateTimeField(null= True, blank = True)
+
+    class Meta:
+        ordering = ['seat_number']
 
     def __str__(self):
         return f'{self.seat_number} in {self.theater.name}'
+
+    def is_hold_active(self):
+        return self.held_until is not None and self.held_until > timezone.now()
+    
+    def is_held_by(self,user):
+        return self.is_hold_active() and user.is_authenticated and self.held_by_id == user.id
+    
+    def status_for(self,user):
+        if self.is_booked:
+            return 'booked'
+        if self.is_hold_active():
+            return 'held_by_you' if self.is_held_by(user) else 'held'
+        return 'available'
 
 
 class Booking(models.Model):

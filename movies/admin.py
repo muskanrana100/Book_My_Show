@@ -14,10 +14,6 @@ class MoviePosterInline(admin.TabularInline):
     model = MoviePoster
     extra = 1
 
-class MoviePosterInline(admin.TabularInline):
-    model = Theater
-    extra = 1
-
 class  TheaterInline(admin.TabularInline):
     model = Theater
     extra = 1
@@ -28,7 +24,7 @@ class GenreAdmin(admin.ModelAdmin):
     search_fields = ['name']
 
 @admin.register(Language)
-class Language(admin.ModelAdmin):
+class LanguageAdmin(admin.ModelAdmin):
     list_display = ['name']
     search_fields = ['name']
 

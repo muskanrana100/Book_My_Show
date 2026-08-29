@@ -1,170 +1,248 @@
-{% extends "users/basic.html" %} {% block content %}
-<div class="container mt-5">
-  <div class="row">
-    <div class="col-lg-8 mx-auto">
-      <!-- Movie and Theater Info -->
-      <div class="card mb-4">
-        <div class="card-body">
-          <div
-            class="d-flex justify-content-between align-items-center flex-wrap"
-          >
-            <div>
-              <h4 class="card-title">{{ theaters.movie.name }}</h4>
-              <p class="card-text text-muted">
-                {{ theaters.name }} | {{ theaters.time }}
-              </p>
-            </div>
-            <div class="mt-2 mt-sm-0">
-              <button class="btn btn-outline-primary me-2 mb-2 mb-sm-0">
-                2D
-              </button>
-              <button class="btn btn-outline-primary me-2 mb-2 mb-sm-0">
-                3D
-              </button>
-              <button class="btn btn-outline-primary mb-2 mb-sm-0">
-                IMAX 3D
-              </button>
-              <button class="btn btn-outline-primary mb-2 mb-sm-0">
-                {{seats|length}} Tickets
-              </button>
-            </div>
-          </div>
-        </div>
+{% extends "users/basic.html" %}
+{% block content %}
+<div class=" container py-4">
+  <h2 class="mb-1">{{theater.movie.name}}</h2>
+  <p class="text-muted">{{theater.name}} &middot; {{theater.time|date:"d M Y, h:i A"}}</p>
+
+  <div id="holdTimerBox" class="alert alert-info d-none" role="alert">
+    Seats reserved for <strong><span id="holdTimer">02:00</span>
+    </strong> - complete payment before time runs out
+  </div>
+
+  <div id="errorBox" class="alert alert-danger d-none" role="alert"></div>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="text-center text-muted mb-3">All eyes this way please!</div>
+      <div id="seatGrid" class="d-flex flex-wrap justify-content-center" style="gap: 10px;">
+        {% for seat in seats %}
+        <button type="button" class="seat-btn" data-seat-id="{{seat.id}}" data-status="{{seat.display_status}}">
+          {{seat.seat_number}}</button>
+        {% endfor %}
       </div>
-
-      <!-- Seat Selection -->
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title text-center mb-4">Select Your Seats</h5>
-          <div class="screen">All eyes this way please!</div>
-
-          <form method="POST">
-            {% csrf_token %}
-            <div class="d-flex justify-content-center flex-wrap mb-4">
-              {% for seat in seats %}
-              <div class="seat {% if seat.is_booked %}sold{% endif %}">
-                {% if not seat.is_booked %}
-                <input
-                  type="checkbox"
-                  name="seats"
-                  value="{{ seat.id }}"
-                  class="d-none"
-                  id="seat-{{ seat.id }}"
-                />
-                <label
-                  for="seat-{{ seat.id }}"
-                  class="w-100 h-100 d-flex align-items-center justify-content-center"
-                  >{{ seat.seat_number }}</label
-                >
-                {% else %} {{ seat.seat_number }} {% endif %}
-              </div>
-              {% endfor %}
-            </div>
-
-            <!-- Seat Legend -->
-            <div class="d-flex justify-content-center mb-4">
-              <div class="d-flex align-items-center me-4">
-                <div class="seat" style="background-color: white"></div>
-                <span class="ms-2">Available</span>
-              </div>
-              <div class="d-flex align-items-center me-4">
-                <div class="seat selected"></div>
-                <span class="ms-2">Selected</span>
-              </div>
-              <div class="d-flex align-items-center">
-                <div class="seat sold"></div>
-                <span class="ms-2">Sold</span>
-              </div>
-            </div>
-
-            <!-- Book Button -->
-            <div class="text-center">
-              <button type="submit" class="btn btn-success btn-lg">
-                Book Selected Seats
-              </button>
-            </div>
-          </form>
+      <div>
+        <div class="d-flex justify-content-center mt-4" style="gap:20px;">
+          <span><span class="legend-box legend-available"></span>Available</span>
+          <span><span class="legend-box legend-selected"></span>Selected</span>
+          <span><span class="legend-box legend-held"></span>Held by others</span>
+          <span><span class="legend-box legend-booked"></span>Booked</span>
         </div>
       </div>
     </div>
   </div>
-</div>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-  }
-  .seat {
-    width: 30px;
-    height: 30px;
-    border: 1px solid #28a745;
-    margin: 3px;
-    text-align: center;
-    line-height: 30px;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.3s, color 0.3s;
-  }
-  .seat:hover {
-    background-color: #28a745;
-    color: white;
-  }
-  .seat.selected {
-    background-color: #28a745;
-    color: white;
-  }
-  .seat.sold {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-  .screen {
-    margin: 20px 0;
-    background-color: #ccc;
-    height: 50px;
-    text-align: center;
-    line-height: 50px;
-    color: #666;
-  }
-  .footer {
-    background-color: #333;
-    color: #ccc;
-    padding: 20px 0;
-  }
-  .footer a {
-    color: #ccc;
-    text-decoration: none;
-  }
-  .footer a:hover {
-    text-decoration: underline;
-  }
-  .footer .col-md-2,
-  .footer .col-md-3 {
-    margin-bottom: 20px;
-  }
-  .footer .social-icons i {
-    font-size: 20px;
-    margin: 0 10px;
-  }
-</style>
-<!-- <h1>Seats for {{theater.name}} - {{theater.movie.name}}</h1>
-{% if error %}
-<p style="color:red;">{{error}}</p>
-{% endif %}
-<form method="POST">
-    {% csrf_token %}
-    <ul>
-        {% for seat in seats %}
-        <li>
-          Seats{{seat.seat_number}}:
-          {% if seat.is_booked %}
-          <strong>Booked seat {{seat.seat_number}}</strong>
-          {% else %}
-          <input type="checkbox" name="seats" value="{{seat.id}}">
-          <strong>Available seat {{seat.seat_number}}</strong>
-          {% endif%}
-        </li>
-        {% endfor %}
-      </ul>
-      <button type="submit">Book selected seats</button>
-</form> -->
+  <div class="card">
+      <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <div>Selected seats: <strong id="selectedCount">0</strong></div>
+            <div>Total: &#8377;<strong id="totalPrice">0</strong></div>
+          </div>
+          <button id="confirmBtn" type="button" class="btn btn-success btn-lg " disabled> Confirm &amp; Pay
 
-{% endblock %}
+          </button>
+      </div>
+      </div>
+    </div>
+
+  {% csrf_token %}
+  <style>
+    .seat-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background: #fff;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .seat-btn[data-status="available"] {
+      background: #fff;
+      border-color: #28a745;
+      color: #28a745;
+    }
+
+    .seat-btn[data-status="held_by_you"] {
+      background: #28a745;
+      border-color: #28a745;
+      color: #fff;
+    }
+
+    .seat-btn[data-status="held"] {
+      background: #f0ad4e;
+      border-color: #f0ad4e;
+      color: #fff;
+      cursor: not-allowed;
+    }
+
+    .seat-btn[data-status="booked"] {
+      background: #6c757d;
+      border-color: #6c757d;
+      color: #fff;
+      cursor: not-allowed;
+    }
+
+    .legend-box {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+
+    .legend-available {
+      background: #fff;
+      border: 1px solid #28a745;
+    }
+
+    .legend-selected {
+      background: #28a745;
+    }
+
+    .legend-held {
+      background: #f0ad4e;
+    }
+
+    .legend-booked {
+      background: #6c757d;
+    }
+  </style>
+
+  <script>
+    (function () {
+    const theaterId = {{ theater.id }};
+    const pricePerSeat = {{ theater.price_per_seat }};
+    const csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+
+    const seatGrid = document.getElementById('seatGrid');
+    const confirmBtn = document.getElementById('confirmBtn');
+    const selectedCountE1 = document.getElementById('selectedCount');
+    const totalPriceE1 = document.getElementById('totalPrice');
+    const errorBox = document.getElementById('errorBox');
+    const holdTimerBox = document.getElementById('holdTimerBox');
+    const holdTimerE1 = document.getElementById('holdTimer');
+
+    let heldUntilMap = {};
+
+    function showError(message) {
+      errorBox.textContent = message;
+      errorBox.classList.remove('d-none');
+      setTimeout(() => errorBox.classList.add('d-none'), 5000);
+    }
+    function updateSummary() {
+      const mySeats = seatGrid.querySelectorAll('[data-status="held_by_you"]');
+      selectedCountE1.textContent = mySeats.length;
+      totalPriceE1.textContent = (mySeats.length * pricePerSeat).toFixed(2);
+      confirmBtn.disabled = mySeats.length === 0;
+    }
+
+    async function postJson(url) {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrfToken },
+      });
+      const data = await response.json();
+      return { ok: response.ok, data };
+    }
+
+    async function holdSeat(seatId) {
+      const { ok, data } = await postJson(`/movies/theater/${theaterId}/seats/${seatId}/hold/`);
+      if (!ok) {
+        showError(data.reason || 'Could not hold this seat.');
+        refreshStatuses();
+        return;
+      }
+      heldUntilMap[seatId] = data.held_until;
+      setSeatStatus(seatId, "held_by_you");
+      updateSummary();
+      startCountdown();
+    }
+
+    async function releaseSeat(seat_Id) {
+      const { ok } = await postJson(`/movies/theater/${theaterId}/seats/${seat_Id}/release/`);
+      if (ok) {
+        delete heldUntilMap[seat_Id];
+        setSeatStatus(seat_Id, 'available');
+        updateSummary();
+      }
+    }
+
+    function setSeatStatus(seatId, status) {
+      const btn = seatGrid.querySelector(`[data-seat-id="${seatId}"]`);
+      if (btn) btn.dataset.status = status;
+    }
+
+    seatGrid.addEventListener('click', (e) => {
+      const btn = e.target.closest('.seat-btn');
+      if (!btn) return;
+      const seatId = btn.dataset.seatId;
+      const status = btn.dataset.status;
+      if (status === 'available') {
+        holdSeat(seatId);
+      }
+      else if (status === 'held_by_you') {
+        releaseSeat(seatId);
+      }
+    });
+
+    confirmBtn.addEventListener('click', async () => {
+      confirmBtn.disabled = true;
+      const { ok, data } = await postJson(`/movies/theater/${theaterId}/seats/confirm/`);
+      if (ok && data.success) {
+        window.location.href = data.redirect_url;
+      }
+      else {
+        showError(data.reason || "Booking failed. Please try again.");
+        confirmBtn.disabled = false;
+        refreshStatuses();
+      }
+    });
+
+    async function refreshStatuses() {
+      const response = await fetch(`/movies/theater/${theaterId}/seats/status/`);
+      const data = await response.json();
+      data.seats.forEach((seat) => {
+        setSeatStatus(seat.id, seat.status);
+        if (seat.status !== 'held_by_you') {
+          delete heldUntilMap[seat.id];
+        }
+      });
+      updateSummary();
+    }
+    let countdownInterval = null;
+
+    function startCountdown() {
+      holdTimerBox.classList.remove('d-none');
+      if (countdownInterval) return;
+      countdownInterval = setInterval(() => {
+        const times = Object.values(heldUntilMap).map((t) => new Date(t).getTime());
+        if (times.length === 0) {
+          holdTimerBox.classList.add('d-none');
+          clearInterval(countdownInterval);
+          countdownInterval = null;
+          return;
+        }
+        const earliest = Math.min(...times);
+        const remainingMs = earliest - Date.now();
+        if (remainingMs <= 0) {
+          showError('Your seat hold expired. Please select your seats again.');
+          heldUntilMap = {};
+
+          refreshStatuses();
+          holdTimerBox.classList.add('d-none');
+          clearInterval(countdownInterval);
+          countdownInterval = null;
+          return;
+        }
+        const totalSeconds = Math.floor(remainingMs / 1000);
+        const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+        const seconds = String(totalSeconds % 60).padStart(2, '0');
+        holdTimerE1.textContent = `${minutes}:${seconds}`;
+      }, 1000);
+    }
+
+    setInterval(refreshStatuses, 5000);
+    updateSummary();
+}) ();
+  </script>
+  {% endblock %}
