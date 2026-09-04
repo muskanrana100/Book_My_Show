@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.core.validators import RegexValidator
-from django.db import models
+from django.db import models, transaction
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
@@ -221,10 +221,119 @@ class Booking(models.Model):
     seat = models.OneToOneField(Seat, on_delete=models.CASCADE)
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='bookings')
     theater = models.ForeignKey(Theater, on_delete=models.CASCADE, related_name='bookings')
+    payment = models.ForeignKey(
+        'Payment', on_delete= models.SET_NULL, null= True, related_name = 'bookings')
     booked_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f'Booking by {self.user.username} for {self.seat.seat_number} at {self.theater.name}'
+
+class Payment(models.Model):
+    STATUS_CREATED = 'created'
+    STATUS_SUCCESS = 'success'
+    STATUS_FAILED = 'failed'
+    STATUS_CANCELLED = 'cancelled'
+    STATUS_CHOICES =[
+        (STATUS_CREATED , 'Created'),
+        (STATUS_SUCCESS ,'Success'),
+        (STATUS_FAILED , 'Failed'),
+        (STATUS_CANCELLED , 'Cancelled'),
+    ]
+    
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete= models.CASCADE, related_name='payments')
+    theater = models.ForeignKey(Theater, on_delete= models.CASCADE, related_name='payments')
+    seats = models.ManyToManyField(Seat, related_name = 'payments')
+
+
+    amount = models.DecimalField(max_digits=9, decimal_places=2)
+    status = models.CharField(max_length= 20, choices=STATUS_CHOICES, default = STATUS_CREATED)
+
+    razorpay_order_id = models.CharField(max_length=100, unique=True)
+    razorpay_payment_id= models.CharField(max_length=100, blank= True,null = True, unique= True)
+    razorpay_signature = models.CharField(max_length=225, blank= True)
+    failure_reason = models.CharField(max_length = 255, blank = True)
+
+    created_at = models.DateTimeField(auto_now_add = True)
+    updated_at = models.DateTimeField(auto_now = True)
+
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):    
+        return f'Payment {self.razorpay_order_id} ({self.status}) by {self.user.username}'
+    
+    def mark_success(self, razorpay_payment_id, razorpay_signature):
+        """
+        Confirms this payment and creates real Booking records for every seat
+        it covers. Safe to call more than once (e.g. once from the browser
+        callback and once from the webhook) — if this payment has already
+        been marked successful, it does nothing further, so duplicate calls
+        can never create duplicate bookings.
+        """
+        with  transaction.atomic():
+            locked = Payment.objects.select_for_update().get(pk=self.pk)
+            if locked.status == Payment.STATUS_SUCCESS:
+                return locked
+            
+            locked.razorpay_payment_id = razorpay_payment_id
+            locked.razorpay_signature = razorpay_signature
+            locked.status = Payment.STATUS_SUCCESS
+            locked.save(update_fields=['razorpay_payment_id', 'razorpay_signature','status','updated_at'])
+
+            seats = list(Seat.objects.select_for_update().filter(payments=locked))
+            for seat in seats:
+                if seat.is_booked:
+                    continue
+                Booking.objects.create(
+                    user = locked.user,
+                    seat = seat,
+                    movie = locked.theater.movie,
+                    theater = locked.theater,
+                    payment=locked,
+                )
+
+                seat.is_booked = True
+                seat.held_by = None
+                seat.held_until = None
+                seat.save(update_fields=['is_booked', 'held_by', 'held_until'])
+
+            return locked
+
+    def mark_failed(self, reason=''):
+        with transaction.atomic():
+            locked = Payment.objects.select_for_update().get(pk=self.pk)
+            if locked.status == Payment.STATUS_SUCCESS:
+                return locked
+            
+            locked.status = Payment.STATUS_FAILED
+            locked.failure_reason = reason[ :255]
+            locked.save(update_fields=['status','failure_reason','updated_at'])
+
+            seats =Seat.objects.select_for_update().filter(payments=locked, is_booked= False)
+
+            for seat in seats:
+                seat.held_by = None
+                seat.held_until = None
+                seat.save(update_fields=['held_by','held_until'])
+            return locked
+
+    def mark_cancelled(self):
+        with transaction.atomic():
+            locked = Payment.objects.select_for_update().get(pk=self.pk)
+            if locked.status == Payment.STATUS_SUCCESS:
+                return locked
+            locked.status = Payment.STATUS_CANCELLED
+            locked.save(update_fields=['status','updated_at'])
+
+            seats = Seat.objects.select_for_update().filter(payments =locked, is_booked = False)
+
+            for seat in seats:
+                seat.held_by = None
+                seat.held_until = None
+                seat.save(update_fields=['held_by','held_until'])
+            return locked
+
 
 
 class Review(models.Model):

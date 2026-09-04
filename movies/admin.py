@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from .models import(
     Booking, CastMember, Genre, Language, Movie, MovieCast,
-    MoviePoster, Review, ReviewReport, Seat, Theater,
+    MoviePoster, Payment, Review, ReviewReport, Seat, Theater,
 )
 
 class MovieCastInline(admin.TabularInline):
@@ -32,6 +32,13 @@ class LanguageAdmin(admin.ModelAdmin):
 class CastMemberAdmin(admin.ModelAdmin):
     list_display = ['name']
     search_fields = ['name']
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ['razorpay_order_id', 'user','theater','amount','status','created_at']
+    list_filter = ['status','theater']
+    search_fields = ['razorpay_order_id', 'razorpay_payment_id','user__username']
+    readonly_fields = ['razorpay_order_id','razorpay_payment_id','razorpay_signature']
 
 @admin.register(Movie)
 class MovieAdmin(admin.ModelAdmin):
