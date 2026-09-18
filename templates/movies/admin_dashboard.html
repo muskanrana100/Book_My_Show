@@ -1,0 +1,637 @@
+{% extends "users/basic.html" %}
+
+{% block title %}Admin Dashboard - BookMySeat{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <!-- ====================================================== -->
+    <!-- HEADER -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Admin Dashboard</h2>
+            <p class="text-muted mb-0">
+                Business analytics and performance insights
+            </p>
+        </div>
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- DATE FILTER -->
+
+    <form method="GET" class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <div class="row align-items-end g-3">
+                <div class="col-md-4">
+                    <label class="form-label">From</label>
+                    <input type="date" name="start" class="form-control" value="{{ start|date:'Y-m-d' }}">
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label"> To </label>
+                    <input type="date" name="end" class="form-control" value="{{ end|date:'Y-m-d' }}">
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class=" btn btn-primary w-100"> Apply Filter </button>
+                </div>
+
+                <div class="col-md-2">
+                    <a href="{% url 'admin_dashboard_export_csv' %}?start={{ start|date:'Y-m-d' }}&end={{ end|date:'Y-m-d' }}"
+                        class="btn btn-outline-success w-100"><i class="fas fa-file-csv"></i> Export CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- ====================================================== -->
+    <!-- SUMMARY CARDS -->
+
+    <div class="row mb-4">
+        <div class=" col-md-3 mb-3">
+            <div class="card text-white bg-primary h-100 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-uppercase"> Total Revenue </h6>
+                    <h2> &#8377;{{ total_revenue|floatformat:2 }} </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-success h-100 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-uppercase"> Active Bookings </h6>
+                    <h2> {{ active_count }} </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class=" col-md-3 mb-3">
+            <div class="card text-white bg-danger h-100 shadow-sm">
+                <div class="card-body">
+                    <h6 class=" text-uppercase">
+                        Cancelled Bookings
+                    </h6>
+                    <h2>
+                        {{ cancellation_stats.cancelled }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-dark h-100 shadow-sm">
+                <div class="card-body">
+                    <h6 class=" text-uppercase">
+                        Total Refunded
+                    </h6>
+                    <h2>
+                        &#8377; {{ cancellation_stats.total_refunded|floatformat:2 }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- REVENUE -->
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header d-flex justify-content-between">
+            <strong>
+                Revenue Analytics
+            </strong>
+            <select id="revenuePeriod" class="form-select" style="width: 150px;">
+                <option value="day">Daily</option>
+                <option value="week">Weekly</option>
+                <option value="month">Monthly</option>
+                <option value="year">Yearly</option>
+            </select>
+        </div>
+
+        <div class="card-body">
+            <canvas id="revenueChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- BOOKING + USER GROWTH -->
+
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header">
+                    Booking Trend
+                </div>
+                <div class="card-body">
+                    <canvas id="bookingChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header">
+                    User Growth
+                </div>
+                <div class="card-body">
+                    <canvas id="userGrowthChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- PEAK HOURS -->
+
+    <div class="card mb-4 shadow-sm">
+
+        <div class="card-header">
+            Peak Booking Hours
+        </div>
+
+        <div class="card-body">
+
+            <canvas id="peakHoursChart" height="100"></canvas>
+
+        </div>
+
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- TABLES -->
+
+    <div class="row mb-4">
+
+        <!-- THEATER OCCUPANCY -->
+
+        <div class="col-md-4 mb-3">
+
+            <div class="card h-100 shadow-sm">
+
+                <div class="card-header">
+                    Theater Occupancy
+                </div>
+
+                <div class="card-body p-0" style="max-height:400px; overflow-y:auto;">
+
+                    <table class="table table-sm table-hover mb-0">
+
+                        <thead>
+
+                            <tr>
+                                <th>Theater</th>
+                                <th>Movie</th>
+                                <th>Occupancy</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for row in occupancy_by_theater %}
+
+                            <tr>
+
+                                <td>
+                                    {{ row.name }}
+                                </td>
+
+                                <td>
+                                    {{ row.movie__name }}
+                                </td>
+
+                                <td>
+                                    {{ row.occupancy_pct|floatformat:1 }}%
+                                </td>
+
+                            </tr>
+
+                            {% empty %}
+
+                            <tr>
+
+                                <td colspan="3" class="text-center text-muted">
+                                    No data for this range.
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- MOST BOOKED MOVIES -->
+
+        <div class="col-md-4 mb-3">
+
+            <div class="card h-100 shadow-sm">
+
+                <div class="card-header">
+                    Most Booked Movies
+                </div>
+
+                <div class="card-body p-0" style="max-height:400px; overflow-y:auto;">
+
+                    <table class="table table-sm table-hover mb-0">
+
+                        <thead>
+
+                            <tr>
+                                <th>Movie</th>
+                                <th>Bookings</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for row in top_movies %}
+
+                            <tr>
+
+                                <td>
+                                    {{ row.movie__name }}
+                                </td>
+
+                                <td>
+                                    {{ row.bookings }}
+                                </td>
+
+                            </tr>
+
+                            {% empty %}
+
+                            <tr>
+
+                                <td colspan="2" class="text-center text-muted">
+                                    No data for this range.
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- TOP THEATERS -->
+
+        <div class="col-md-4 mb-3">
+
+            <div class="card h-100 shadow-sm">
+
+                <div class="card-header">
+                    Top-Performing Theaters
+                </div>
+
+                <div class="card-body p-0" style="max-height:400px; overflow-y:auto;">
+
+                    <table class="table table-sm table-hover mb-0">
+
+                        <thead>
+
+                            <tr>
+                                <th>Theater</th>
+                                <th>Revenue</th>
+                                <th>Bookings</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for row in top_theaters %}
+
+                            <tr>
+
+                                <td>
+                                    {{ row.theater__name }}
+                                </td>
+
+                                <td>
+                                    &#8377;{{ row.revenue|floatformat:2 }}
+                                </td>
+
+                                <td>
+                                    {{ row.bookings }}
+                                </td>
+
+                            </tr>
+
+                            {% empty %}
+
+                            <tr>
+
+                                <td colspan="3" class="text-center text-muted">
+                                    No data for this range.
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ========================================================== -->
+<!-- CHART.JS -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+
+    // ==========================================================
+    // DATA FROM DJANGO
+
+    const revenueDayData =
+        JSON.parse('{{ revenue_by_day_json|escapejs }}');
+
+    const revenueWeekData =
+        JSON.parse('{{ revenue_by_week_json|escapejs }}');
+
+    const revenueMonthData =
+        JSON.parse('{{ revenue_by_month_json|escapejs }}');
+
+    const revenueYearData =
+        JSON.parse('{{ revenue_by_year_json|escapejs }}');
+
+    const bookingData =
+        JSON.parse('{{ booking_trend_json|escapejs }}');
+
+    const peakHoursData =
+        JSON.parse('{{ peak_hours_json|escapejs }}');
+
+    const userGrowthData =
+        JSON.parse('{{ user_growth_json|escapejs }}');
+
+    // ==========================================================
+    // REVENUE CHART
+    // ==========================================================
+
+    const revenueCanvas =
+        document.getElementById('revenueChart');
+
+    const revenueChart =
+        new Chart(revenueCanvas, {
+
+            type: 'line',
+
+            data: {
+
+                labels: [],
+
+                datasets: [{
+
+                    label: 'Revenue (₹)',
+
+                    data: [],
+
+                    fill: true,
+
+                    tension: 0.3
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true
+
+                    }
+
+                }
+
+            }
+
+        });
+
+    function updateRevenueChart(period) {
+
+        let data;
+
+        if (period === 'day') {
+
+            data = revenueDayData;
+
+        } else if (period === 'week') {
+
+            data = revenueWeekData;
+
+        } else if (period === 'month') {
+
+            data = revenueMonthData;
+
+        } else {
+
+            data = revenueYearData;
+
+        }
+
+        revenueChart.data.labels =
+            data.map(item => item.period);
+
+        revenueChart.data.datasets[0].data =
+            data.map(item => item.revenue);
+
+        revenueChart.update();
+
+    }
+
+    updateRevenueChart('day');
+
+    document
+        .getElementById('revenuePeriod')
+        .addEventListener('change', function () {
+
+            updateRevenueChart(this.value);
+
+        });
+
+    // ==========================================================
+    // BOOKING TREND
+    // ==========================================================
+
+    new Chart(
+        document.getElementById('bookingChart'),
+        {
+
+            type: 'bar',
+
+            data: {
+
+                labels:
+                    bookingData.map(item => item.period),
+
+                datasets: [{
+
+                    label: 'Bookings',
+
+                    data:
+                        bookingData.map(item => item.count),
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true
+
+                    }
+
+                }
+
+            }
+
+        }
+    );
+
+    // ==========================================================
+    // PEAK BOOKING HOURS
+    // ==========================================================
+
+    new Chart(
+        document.getElementById('peakHoursChart'),
+        {
+
+            type: 'bar',
+
+            data: {
+
+                labels:
+                    peakHoursData.map(
+                        item => `${item.hour}:00`
+                    ),
+
+                datasets: [{
+
+                    label: 'Bookings by Hour',
+
+                    data:
+                        peakHoursData.map(
+                            item => item.count
+                        ),
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true
+
+                    }
+
+                }
+
+            }
+
+        }
+    );
+
+    // ==========================================================
+    // USER GROWTH
+    // ==========================================================
+
+    new Chart(
+        document.getElementById('userGrowthChart'),
+        {
+
+            type: 'line',
+
+            data: {
+
+                labels:
+                    userGrowthData.map(
+                        item => item.period
+                    ),
+
+                datasets: [{
+
+                    label: 'New Users',
+
+                    data:
+                        userGrowthData.map(
+                            item => item.count
+                        ),
+
+                    fill: true,
+
+                    tension: 0.3
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true
+
+                    }
+
+                }
+
+            }
+
+        }
+    );
+
+</script>
+
+{% endblock %}

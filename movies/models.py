@@ -10,27 +10,27 @@ from datetime import timedelta
 
 
 youtube_id_validator = RegexValidator(
-    regex=r'^[A-Za-z0-9_-]{11}$',
+    regex=r"^[A-Za-z0-9_-]{11}$",
     message="Enter just the 11-character YouTube video ID, e.g. 'dQw4w9WgXcQ' "
             "(the part after v= in youtube.com/watch?v=...)."
 )
 
 
 class Genre(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length =100, unique = True)
 
     class Meta:
-        ordering = ['name']
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
 
 
 class Language(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length = 100, unique =True)
 
     class Meta:
-        ordering = ['name']
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
@@ -38,20 +38,16 @@ class Language(models.Model):
 
 class CastMember(models.Model):
     ROLE_ACTOR = 'actor'
-    ROLE_DIRECTOR = 'director'
+    ROLE_DIRECTOR = "director"
     ROLE_PRODUCER = 'producer'
-    ROLE_CHOICES = [
-        (ROLE_ACTOR, 'Actor'),
-        (ROLE_DIRECTOR, 'Director'),
-        (ROLE_PRODUCER, 'Producer'),
-    ]
+    ROLE_CHOICES = [ (ROLE_ACTOR, 'Actor'), (ROLE_DIRECTOR, 'Director'), (ROLE_PRODUCER, 'Producer'),]
 
-    name = models.CharField(max_length=150)
-    photo = models.ImageField(upload_to='cast/', blank=True, null=True)
-    bio = models.TextField(blank=True)
+    name = models.CharField(max_length = 150)
+    photo= models.ImageField(upload_to= "cast/", blank =True, null= True)
+    bio = models.TextField(blank =True)
 
     class Meta:
-        ordering = ['name']
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
@@ -62,41 +58,36 @@ class Movie(models.Model):
     CERTIFICATE_UA = 'UA'
     CERTIFICATE_A = 'A'
     CERTIFICATE_S = 'S'
-    CERTIFICATE_CHOICES = [
-        (CERTIFICATE_U, 'U - Universal'),
-        (CERTIFICATE_UA, 'UA - Parental Guidance'),
-        (CERTIFICATE_A, 'A - Adults Only'),
-        (CERTIFICATE_S, 'S - Special'),
-    ]
+    CERTIFICATE_CHOICES = [(CERTIFICATE_U, 'U - Universal'), (CERTIFICATE_UA, 'UA - Parental Guidance'), (CERTIFICATE_A, 'A - Adults Only'),(CERTIFICATE_S, 'S - Special'),]
 
-    name = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=280, unique=True, blank=True)
-    image = models.ImageField(upload_to='movies/', help_text='Primary poster shown on listing cards.')
-    description = models.TextField(blank=True, null=True)
+    name = models.CharField(max_length =255)
+    slug = models.SlugField(max_length = 280, unique = True, blank = True)
+    image = models.ImageField(upload_to = "movies/", help_text = "Primary poster shown on listing cards.")
+    description = models.TextField(blank =True, null=True)
 
-    genres = models.ManyToManyField(Genre, related_name='movies', blank=True)
-    languages = models.ManyToManyField(Language, related_name='movies', blank=True)
+    genres = models.ManyToManyField(Genre, related_name = "movies", blank = True)
+    languages = models.ManyToManyField(Language, related_name ="movies", blank = True)
     cast_members = models.ManyToManyField(
-        CastMember, through='MovieCast', related_name='movies', blank=True
+        CastMember, through = "MovieCast", related_name  = "movies", blank = True
     )
 
-    duration_minutes = models.PositiveIntegerField(default=0, help_text='Runtime in minutes.')
-    age_certificate = models.CharField(max_length=2, choices=CERTIFICATE_CHOICES, default=CERTIFICATE_UA)
-    release_date = models.DateField(default=timezone.now)
+    duration_minutes = models.PositiveIntegerField(default = 0, help_text = "Runtime in minutes.")
+    age_certificate = models.CharField(max_length = 2, choices = CERTIFICATE_CHOICES, default = CERTIFICATE_UA)
+    release_date = models.DateField(default = timezone.now)
 
     trailer_youtube_id = models.CharField(
-        max_length=11, blank=True, validators=[youtube_id_validator],
-        help_text="YouTube video ID only, e.g. 'dQw4w9WgXcQ'."
+        max_length = 11, blank = True, validators =  [youtube_id_validator] ,
+        help_text = "YouTube video ID only, e.g. 'dQw4w9WgXcQ'."
     )
 
-    average_rating = models.DecimalField(max_digits=3, decimal_places=1, default=Decimal('0.0'), editable=False)
-    total_ratings = models.PositiveIntegerField(default=0, editable=False)
+    average_rating = models.DecimalField(max_digits = 3 , decimal_places = 1 , default = Decimal('0.0') , editable = False)
+    total_ratings = models.PositiveIntegerField(default = 0 , editable = False)
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add =  True)
+    updated_at = models.DateTimeField(auto_now =  True)
 
     class Meta:
-        ordering = ['-release_date']
+        ordering = ["-release_date"]
 
     def __str__(self):
         return self.name
@@ -106,14 +97,14 @@ class Movie(models.Model):
             base_slug = slugify(self.name)
             candidate = base_slug
             counter = 1
-            while Movie.objects.filter(slug=candidate).exclude(pk=self.pk).exists():
-                counter += 1
-                candidate = f'{base_slug}-{counter}'
+            while Movie.objects.filter(slug = candidate).exclude(pk = self.pk).exists():
+                counter  += 1
+                candidate  = f'{base_slug}-{counter}'
             self.slug = candidate
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
-        return reverse('movie_detail', kwargs={'slug': self.slug})
+        return reverse("movie_detail", kwargs={"slug" :  self.slug})
 
     @property
     def trailer_embed_url(self):
@@ -122,82 +113,87 @@ class Movie(models.Model):
         return f'https://www.youtube-nocookie.com/embed/{self.trailer_youtube_id}'
 
     @property
-    def duration_display(self):
+    def duration_display (self):
         hours, minutes = divmod(self.duration_minutes, 60)
         if hours:
             return f'{hours}h {minutes}m'
         return f'{minutes}m'
 
-    def recalculate_rating(self):
+    def recalculate_rating (self):
         stats = self.reviews.filter(is_hidden=False).aggregate(
             avg=models.Avg('rating'), count=models.Count('id')
         )
-        self.average_rating = Decimal(str(round(stats['avg'] or 0, 1)))
-        self.total_ratings = stats['count'] or 0
-        self.save(update_fields=['average_rating', 'total_ratings'])
+        self.average_rating = Decimal(str (round (stats["avg"] or 0, 1)))
+        self.total_ratings = stats["count"] or 0
+        self.save(update_fields =["average_rating", "total_ratings"])
 
     def similar_movies(self, limit=8):
         genre_ids = self.genres.values_list('id', flat=True)
-        if not genre_ids:
+        if not genre_ids :
             return Movie.objects.none()
-        return Movie.objects.filter(genres__in=genre_ids).exclude(id=self.id).distinct()[:limit]
+        return Movie.objects.filter(genres__in = genre_ids).exclude(id = self.id).distinct()[ :limit]
 
 
 class MovieCast(models.Model):
-    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='movie_cast')
-    cast_member = models.ForeignKey(CastMember, on_delete=models.CASCADE, related_name='movie_roles')
-    role = models.CharField(max_length=20, choices=CastMember.ROLE_CHOICES, default=CastMember.ROLE_ACTOR)
-    character_name = models.CharField(max_length=150, blank=True)
-    order = models.PositiveIntegerField(default=0, help_text='Lower numbers appear first (billing order).')
+    movie = models.ForeignKey (Movie , on_delete = models.CASCADE, related_name ="movie_cast")
+    cast_member = models.ForeignKey(CastMember, on_delete=models.CASCADE, related_name = "movie_roles")
+    role = models.CharField (max_length = 20, choices=CastMember.ROLE_CHOICES, default=CastMember.ROLE_ACTOR)
+    character_name = models.CharField (max_length =150, blank= True)
+    order = models.PositiveIntegerField (default =0, help_text ='Lower numbers appear first (billing order).')
 
     class Meta:
-        ordering = ['order']
-        unique_together = ('movie', 'cast_member', 'role')
+        ordering = ["order"]
+        unique_together = ("movie", "cast_member", "role")
 
     def __str__(self):
         return f'{self.cast_member.name} in {self.movie.name}'
 
 
 class MoviePoster(models.Model):
-    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='gallery_images')
-    image = models.ImageField(upload_to='movies/gallery/')
-    caption = models.CharField(max_length=150, blank=True)
-    order = models.PositiveIntegerField(default=0)
+    movie = models.ForeignKey(Movie, on_delete = models.CASCADE, related_name ="gallery_images")
+    image = models.ImageField(upload_to =  "movies/gallery/")
+    caption = models.CharField(max_length = 150, blank = True)
+    order  = models.PositiveIntegerField(default = 0)
 
     class Meta:
-        ordering = ['order']
+        ordering = ["order"]
 
     def __str__(self):
         return f'Gallery image for {self.movie.name}'
 
 
 class Theater(models.Model):
-    name = models.CharField(max_length=255)
-    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='theaters')
+    name = models.CharField (max_length = 255)
+    city = models.CharField (max_length = 100, blank = True, db_index = True)
+    movie = models.ForeignKey (Movie, on_delete=models.CASCADE, related_name="theaters")
     time = models.DateTimeField()
-    price_per_seat = models.DecimalField(max_digits = 7, decimal_places =2, default= 200)
+    price_per_seat = models.DecimalField(max_digits = 7, decimal_places = 2, default = 200)
 
     class Meta:
-        ordering = ['time']
+        ordering = ["time"]
+        indexes = [
+            models.Index(fields=["city", "time"]),
+        ]
 
     def __str__(self):
-        return f'{self.name} - {self.movie.name} at {self.time}'
+        return f'{self.name} ({self.city}) - {self.movie.name} at {self.time}'
 
 
 class Seat(models.Model):
-    HOLD_DURATION = timedelta(minutes=2)
+    HOLD_DURATION = timedelta(minutes = 2)
 
-    theater = models.ForeignKey(Theater, on_delete=models.CASCADE, related_name='seats')
-    seat_number = models.CharField(max_length=10)
-    is_booked = models.BooleanField(default=False)
+    theater = models.ForeignKey (Theater, on_delete = models.CASCADE, related_name = "seats")
+    seat_number = models.CharField (max_length = 10)
+    is_booked = models.BooleanField (default = False)
     held_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,on_delete = models.SET_NULL,
-        null = True, blank= True, related_name = 'held_seats'
+        settings.AUTH_USER_MODEL, on_delete = models.SET_NULL,
+        null = True,   blank = True, related_name = "held_seats"
     )
     held_until = models.DateTimeField(null= True, blank = True)
 
     class Meta:
-        ordering = ['seat_number']
+        ordering = ["seat_number"]
+        indexes =[ models.Index(fields =["theater","is_booked" ]), ]
 
     def __str__(self):
         return f'{self.seat_number} in {self.theater.name}'
@@ -217,6 +213,17 @@ class Seat(models.Model):
 
 
 class Booking(models.Model):
+    REFUND_NONE = 'none'
+    REFUND_PROCESSING = 'processing'
+    REFUND_REFUNDED = 'refunded'
+    REFUND_FAILED = 'failed'
+    REFUND_STATUS_CHOICES =[
+        (REFUND_NONE, 'None'),
+        (REFUND_PROCESSING, 'Processing'),
+        (REFUND_REFUNDED, 'Refunded'),
+        (REFUND_FAILED, 'Failed'),
+    ]
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings')
     seat = models.OneToOneField(Seat, on_delete=models.CASCADE)
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='bookings')
@@ -225,8 +232,81 @@ class Booking(models.Model):
         'Payment', on_delete= models.SET_NULL, null= True, related_name = 'bookings')
     booked_at = models.DateTimeField(auto_now_add=True)
 
+    is_cancelled = models.BooleanField(default= False)
+    cancelled_at = models.DateTimeField(null = True, blank=True)
+    refund_id =models.CharField(max_length=100,blank=True)
+    refund_amount = models.DecimalField(max_digits=9 , decimal_places=2, null=True, blank= True)
+    refund_status = models.CharField(max_length=20,choices=REFUND_STATUS_CHOICES, default= REFUND_NONE)
+
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=["booked_at"],
+                name="booking_booked_at_idx"
+            ),
+
+            models.Index(
+                fields=['booked_at', 'is_cancelled'],
+                name='booking_date_cancel_idx'
+            ),
+
+            models.Index(
+                fields=['movie', 'booked_at'],
+                name='booking_movie_date_idx'
+            ),
+
+            models.Index(
+                fields=['theater', 'booked_at'],
+                name='booking_theater_date_idx'
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f'Booking by {self.user.username} '
+            f'for {self.seat.seat_number} at {self.theater.name}'
+        )
+
     def __str__(self):
         return f'Booking by {self.user.username} for {self.seat.seat_number} at {self.theater.name}'
+
+    def cancel_and_refund(self, razorpay_client):
+        """
+        Cancels this booking and, if it was paid for, issues a real refund
+        via Razorpay for this seat's share of the original payment. Frees
+        the seat immediately so it becomes bookable again. Safe to call
+        only once — checked by the view before this is invoked.
+        """
+
+        with transaction.atomic():
+            locked = Booking.objects.select_for_update().get(pk=self.pk)
+            if locked.is_cancelled:
+                return locked
+            
+            if locked.payment_id and locked.payment.razorpay_payment_id:
+                refund_amount_rupees = locked.theater.price_per_seat
+                refund_amount_paise = int(refund_amount_rupees * 100)
+                try:
+                    refund = razorpay_client.payment.refund(
+                        locked.payment.razorpay_payment_id,
+                        {'amount': refund_amount_paise}
+                    )
+                    locked.refund_id = refund['id']
+                    locked.refund_amount = refund_amount_rupees
+                    locked.refund_status = Booking.REFUND_REFUNDED
+                except Exception:
+                    locked.refund_status = Booking.REFUND_FAILED
+
+            locked.is_cancelled = True
+            locked.cancelled_at = timezone.now()
+            locked.save(update_fields= [
+                'is_cancelled' , 'cancelled_at' , 'refund_id',  'refund_amount' , 'refund_status'])
+
+            seat = locked.seat
+            seat.is_booked = False
+            seat.save(update_fields=['is_booked'])
+
+            return locked
 
 class Payment(models.Model):
     STATUS_CREATED = 'created'
@@ -260,8 +340,24 @@ class Payment(models.Model):
     class Meta:
         ordering = ['-created_at']
 
-    def __str__(self):    
-        return f'Payment {self.razorpay_order_id} ({self.status}) by {self.user.username}'
+        indexes = [
+            models.Index(
+                fields=['created_at'],
+                name='payment_created_at_idx'
+            ),
+
+            models.Index(
+                fields=['created_at', 'status'],
+                name='payment_date_status_idx'
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f'Payment {self.razorpay_order_id} '
+            f'({self.status}) by {self.user.username}'
+        )
+
     
     def mark_success(self, razorpay_payment_id, razorpay_signature):
         """
@@ -412,4 +508,25 @@ class ReviewReport(models.Model):
         super().save(*args, **kwargs)
         if is_new:
             self.review.report_count = self.review.reports.count()
-            self.review.save(update_fields=['report_count'])
+            self.review.save(update_fields=["report_count"])
+
+
+class RecentlyViewed(models.Model):
+    """
+    Tracks the last time a user viewed each movie's detail page. Feeds the
+    'Recommended for You' section — a movie's genres/languages count as a
+    signal of interest even if the user never went on to book it.
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='recently_viewed')
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='viewed_by')
+    viewed_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("user", "movie")
+        ordering = ["-viewed_at"]
+        indexes = [
+            models.Index(fields=["user", "-viewed_at"]),
+        ]
+
+    def __str__(self):
+        return f'{self.user.username} viewed {self.movie.name}'
