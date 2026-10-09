@@ -66,12 +66,12 @@ class Command(BaseCommand):
 
                     theater = Theater.objects.create(
                         name=theater_name,
+                        city=random.choice(['Mumbai', 'Delhi', 'Bangalore', 'Pune', 'Hyderabad']),
                         movie=movie,
                         time=show_time,
-                        price_per_seat=Decimal(
-                            random.choice([150, 200, 250, 300])
-                        ),
+                        price_per_seat=Decimal(random.choice([150, 200, 250, 300])),
                     )
+                    
 
                     theaters.append(theater)
 

@@ -1,87 +1,146 @@
-{% extends "users/basic.html" %} {% block content %}
+
+{% extends "users/basic.html" %}
+{% block content %}
 
 <div class="container py-5">
   <div class="row">
+
+    <!-- User Information -->
     <div class="col-lg-4 mb-4">
-      <!-- User Info Card -->
       <div class="card shadow">
         <div class="card-body text-center">
           <div class="mb-3">
             <i class="fas fa-user-circle fa-6x text-primary"></i>
           </div>
+
           <h3 class="card-title mb-0">{{ user.username }}</h3>
           <p class="text-muted mb-3">{{ user.email }}</p>
+
           <div class="d-flex justify-content-center">
-            <a href="#" class="btn btn-outline-primary me-2"><i class="fas fa-envelope me-2"></i>Message</a> 
-            <a href="{% url 'password_reset' %}" class="btn btn-outline-secondary"><i class="fas fa-key me-2"></i>Reset Password</a>
+            <a href="#" class="btn btn-outline-primary me-2">
+              <i class="fas fa-envelope me-2"></i>Message
+            </a>
+
+            <a href="{% url 'password_reset' %}"
+               class="btn btn-outline-secondary">
+              <i class="fas fa-key me-2"></i>Reset Password
+            </a>
           </div>
         </div>
       </div>
     </div>
-    
+
     <div class="col-lg-8">
-      <!-- Profile Update Form Card -->
+
+      <!-- Update Profile -->
       <div class="card shadow mb-4">
         <div class="card-header bg-primary text-white">
-          <h4 class="mb-0"><i class="fas fa-user-edit me-2"></i> Update Profile</h4>
+          <h4 class="mb-0">
+            <i class="fas fa-user-edit me-2"></i>Update Profile
+          </h4>
         </div>
+
         <div class="card-body">
           <form method="POST">
             {% csrf_token %}
+
             {% for field in u_form %}
               <div class="mb-3">
                 <label for="{{ field.id_for_label }}" class="form-label">
                   <i class="fas fa-{% if field.name == 'username' %}user{% elif field.name == 'email' %}envelope{% else %}info-circle{% endif %} me-2"></i>
                   {{ field.label }}
                 </label>
+
                 {{ field.errors }}
                 {{ field }}
+
                 {% if field.help_text %}
-                  <small class="form-text text-muted">{{ field.help_text }}</small>
+                  <small class="form-text text-muted">
+                    {{ field.help_text }}
+                  </small>
                 {% endif %}
               </div>
             {% endfor %}
-            <button class="btn btn-primary w-100" type="submit"><i class="fas fa-save me-2"></i> Update Profile</button>
+
+            <button class="btn btn-primary w-100" type="submit">
+              <i class="fas fa-save me-2"></i>Update Profile
+            </button>
           </form>
         </div>
       </div>
-      
-      <!-- Bookings Card -->
+
+      <!-- Your Bookings -->
       <div class="card shadow">
         <div class="card-header bg-success text-white">
-          <h4 class="mb-0"><i class="fas fa-ticket-alt me-2"> </i> Your Bookings</h4>
+          <h4 class="mb-0">
+            <i class="fas fa-ticket-alt me-2"></i>Your Bookings
+          </h4>
         </div>
+
         <div class="card-body">
           {% if bookings %}
             <div class="row row-cols-1 row-cols-md-2 g-4">
+
               {% for booking in bookings %}
                 <div class="col">
                   <div class="card h-100 border-0 shadow-sm">
                     <div class="card-body">
-                      <h5 class="card-title">{{ booking.movie.name }}</h5>
+
+                      <h5 class="card-title">
+                        {{ booking.movie.name }}
+                      </h5>
+
                       <p class="card-text">
-                        <i class="fas fa-film me-2 text-muted"> </i>  {{ booking.theater.name }}<br>
-                        <i class="fas fa-chair me-2 text-muted"> </i>  Seat: {{ booking.seat.seat_number }}<br>
-                        <i class="far fa-clock me-2 text-muted"> </i>  {{ booking.booked_at|date:"F d, Y H:i" }}
+                        <i class="fas fa-film me-2 text-muted"></i>
+                        {{ booking.theater.name }}<br>
+
+                        <i class="fas fa-desktop me-2 text-muted"></i>
+                        Screen: {{ booking.theater.screen }}<br>
+
+                        <i class="fas fa-chair me-2 text-muted"></i>
+                        Seat: {{ booking.seat.seat_number }}<br>
+
+                        <i class="far fa-clock me-2 text-muted"></i>
+                        {{ booking.theater.time|date:"F d, Y h:i A" }}
                       </p>
+
+                      {% if booking.payment and booking.payment.status == 'success' and not booking.is_cancelled %}
+                        <a href="{% url 'download_ticket' booking.id %}"
+                           class="btn btn-primary btn-sm mt-2">
+                          <i class="fas fa-download me-1"></i>
+                          Download Ticket (PDF)
+                        </a>
+                      {% elif booking.is_cancelled %}
+                        <span class="badge bg-secondary">
+                          Booking Cancelled
+                        </span>
+                      {% endif %}
+
                     </div>
                   </div>
                 </div>
               {% endfor %}
+
             </div>
           {% else %}
             <div class="text-center py-5">
               <i class="fas fa-ticket-alt fa-4x text-muted mb-3"></i>
-              <p class="lead mb-0">No bookings yet. Time to plan your next movie night!</p>
+              <p class="lead mb-0">
+                No bookings yet. Time to plan your next movie night!
+              </p>
             </div>
           {% endif %}
         </div>
       </div>
-      <!-- Payment History Card -->
+
+      <!-- Payment History -->
       <div class="card shadow mt-4">
         <div class="card-header bg-dark text-white">
-          <h4 class="mb-0"><i class="fas fa-receipt me-2"></i>Payment History</h4>
+          <h4 class="mb-0">
+            <i class="fas fa-receipt me-2"></i>Payment History
+          </h4>
         </div>
+
         <div class="card-body">
           {% if payments %}
             <div class="table-responsive">
@@ -96,67 +155,93 @@
                     <th>Transaction ID</th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {% for payment in payments %}
-                  <tr>
+                    <tr>
+                      <td>
+                        {{ payment.created_at|date:"d M Y, H:i" }}
+                      </td>
 
-                    <td>{{ payment.created_at|date:"d M Y, H:i"}}</td>
-                    <td>{{payment.theater.movie.name}}</td>
-                    <td>{% for seat in payment.seats.all %}{{seat.seat_number}}{% if not forloop.last %},{% endif %}{% endfor %}</td>
-                    <td>&#8377;{{payment.amount}}</td>
-                    <td>
-                      {% if payment.status == 'success' %}
-                      <span class="badge bg-success">Success</span>
-                      {% elif payment.status == 'failed' %}
-                      <span class="badge bg-danger">Failed</span>
-                      {% elif payment.status == 'cancelled' %}
-                      <span class="badge bg-secondary">Cancelled</span>
-                      {% else %}
-                      <span class="badge bg-warning text-dark">Created</span>
-                      {% endif %}
-                    </td>
-                    <td>
-                      <small class="text-muted">{{payment.razorpay_payment_id|default:payment.razorpay_order_id}}</small>
-                    </td>
-                  </tr>
+                      <td>
+                        {{ payment.theater.movie.name }}
+                      </td>
+
+                      <td>
+                        {% for seat in payment.seats.all %}
+                          {{ seat.seat_number }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                          —
+                        {% endfor %}
+                      </td>
+
+                      <td>
+                        &#8377;{{ payment.amount }}
+                      </td>
+
+                      <td>
+                        {% if payment.status == 'success' %}
+                          <span class="badge bg-success">Success</span>
+                        {% elif payment.status == 'failed' %}
+                          <span class="badge bg-danger">Failed</span>
+                        {% elif payment.status == 'cancelled' %}
+                          <span class="badge bg-secondary">Cancelled</span>
+                        {% else %}
+                          <span class="badge bg-warning text-dark">Created</span>
+                        {% endif %}
+                      </td>
+
+                      <td>
+                        <small class="text-muted">
+                          {{ payment.razorpay_payment_id|default:payment.razorpay_order_id }}
+                        </small>
+                      </td>
+                    </tr>
                   {% endfor %}
                 </tbody>
               </table>
             </div>
-            {% else %}
-             <div class="text-center py-5">
+
+          {% else %}
+            <div class="text-center py-5">
               <i class="fas fa-receipt fa-4x text-muted mb-3"></i>
               <p class="lead mb-0">No payment history yet.</p>
-             </div>
+            </div>
           {% endif %}
         </div>
       </div>
+
     </div>
   </div>
 </div>
 
-<!-- Font Awesome CDN -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<!-- Font Awesome -->
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-<!-- Custom CSS -->
 <style>
   body {
     background-color: #f8f9fa;
   }
+
   .card {
     border-radius: 15px;
     border: none;
     transition: transform 0.3s ease-in-out;
   }
+
   .card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-3px);
   }
+
   .card-header {
     border-top-left-radius: 15px;
     border-top-right-radius: 15px;
   }
-  /* Style form fields */
-  form input, form select, form textarea {
+
+  form input,
+  form select,
+  form textarea {
     display: block;
     width: 100%;
     padding: 0.375rem 0.75rem;
@@ -168,44 +253,27 @@
     background-clip: padding-box;
     border: 1px solid #ced4da;
     border-radius: 0.25rem;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    transition: border-color 0.15s ease-in-out,
+                box-shadow 0.15s ease-in-out;
   }
-  form input:focus, form select:focus, form textarea:focus {
+
+  form input:focus,
+  form select:focus,
+  form textarea:focus {
     border-color: #86b7fe;
     outline: 0;
     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
   }
+
   @media (max-width: 767.98px) {
     .card-body {
       padding: 1rem;
     }
+
+    .table {
+      font-size: 0.85rem;
+    }
   }
 </style>
-<!-- <div class="container mt-4">
-    <h2>Profile</h2>
-    <form method="POST">
-      {% csrf_token %}
-      {{ u_form.as_p }}
-      <div>
-        <button class="btn btn-primary mt-2" type="submit">Update Profile</button>
-      </div>
-    </form>
-   
-    <p>Want to change your password? <a href="{% url 'password_reset' %}">Reset it here</a>.</p>
 
-    <h2>Booking</h2>
-    <ul>
-      {% for booking in bookings %}
-      <li>
-        movie:{{booking.movie.name}}<br>
-        theater:{{booking.theater.name}}<br>
-        seat:{{booking.seat.seat_number}}<br>
-        bookedat:{{booking.booked_at}}
-
-      </li>
-      {% empty %}
-      <li>no bookings yet</li>
-      {% endfor %}
-    </ul>
-  </div> -->
 {% endblock %}

@@ -166,6 +166,7 @@ class Theater(models.Model):
     name = models.CharField (max_length = 255)
     city = models.CharField (max_length = 100, blank = True, db_index = True)
     movie = models.ForeignKey (Movie, on_delete=models.CASCADE, related_name="theaters")
+    screen = models.CharField(max_length=100, default="Screen 1")
     time = models.DateTimeField()
     price_per_seat = models.DecimalField(max_digits = 7, decimal_places = 2, default = 200)
 

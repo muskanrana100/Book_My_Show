@@ -20,4 +20,11 @@ urlpatterns = [
     path('admin-dashboard/', views.admin_dashboard, name = 'admin_dashboard'),
     path('admin-dashboard/export/', views.admin_dashboard_export_csv , name = 'admin_dashboard_export_csv'),
     path('<slug:slug>/', views.movie_detail, name = 'movie_detail'),
+    path(
+    "tickets/verify/<int:booking_id>/", views.verify_ticket,name="verify_ticket",),
+    path(
+    "tickets/download/<int:booking_id>/",
+    views.download_ticket,
+    name="download_ticket",
+),
 ]

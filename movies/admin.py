@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from .models import(
     Booking, CastMember, Genre, Language, Movie, MovieCast,
-    MoviePoster, Payment, Review, ReviewReport, Seat, Theater,
+    MoviePoster, Payment,RecentlyViewed, Review, ReviewReport, Seat, Theater,
 )
 
 class MovieCastInline(admin.TabularInline):
@@ -43,8 +43,8 @@ class PaymentAdmin(admin.ModelAdmin):
 @admin.register(Movie)
 class MovieAdmin(admin.ModelAdmin):
     list_display = ['name', 'release_date' ,'age_certificate','duration_display','average_rating','total_ratings',]
-    list_filter = ['age_certificate', 'genres','languages']
-    search_fields = ['name','description']
+    list_filter= ['age_certificate', 'genres','languages']
+    search_fields= ['name','description']
     prepopulated_fields ={'slug':('name',)}
     filter_horizontal = ['genres', 'languages']
     readonly_fields = ['average_rating','total_ratings']
@@ -52,14 +52,14 @@ class MovieAdmin(admin.ModelAdmin):
 
 @admin.register(Theater)
 class TheaterAdmin(admin.ModelAdmin):
-    list_display = ['name','movie','time']
-    list_filter = ['movie']
+    list_display = ['name',"movie",'time','city', 'price_per_seat']
+    list_filter= ["city", "movie"]
     ordering = ['time']
 
 @admin.register(Seat)
 class SeatAdmin(admin.ModelAdmin):
     list_display = ['theater','seat_number','is_booked']
-    list_filter = ['is_booked', 'theater']
+    list_filter =["is_booked", 'theater']
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
@@ -68,12 +68,17 @@ class BookingAdmin(admin.ModelAdmin):
 
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = ['movie', 'user' ,'rating', 'is_verified_viewer', 'report_count','is_hidden','created_at']
+    list_display= ['movie', 'user' ,'rating', 'is_verified_viewer', 'report_count','is_hidden','created_at']
     list_filter = ['rating', 'is_verified_viewer', 'is_hidden']
-    search_fields = ['movie__name','user__username','body']
+    search_fields= ['movie__name','user__username','body']
     readonly_fields = ['is_verified_viewer','is_edited', 'report_count']
 
 @admin.register(ReviewReport)
 class ReviewReportAdmin(admin.ModelAdmin):
     list_display = ['review', 'reported_by', 'reason', 'created_at']
-    list_filter = ['reason']
+    list_filter =['reason']
+
+@admin.register(RecentlyViewed)
+class RecentlyViewedAdmin(admin.ModelAdmin):
+    list_display= ["user", "movie", "viewed_at"]
+    list_filter = ["movie"]
