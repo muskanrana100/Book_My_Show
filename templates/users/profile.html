@@ -116,7 +116,6 @@
                         </span>
                       {% endif %}
 
-<<<<<<< HEAD
                       {% if not booking.is_cancelled %}
                         <form method="POST" action="{% url 'cancel_booking' booking.id %}" class="mt-2"
                               onsubmit="return confirm('Cancel this seat? Paid bookings are refunded to your original payment method.');">
@@ -128,8 +127,6 @@
                         </form>
                       {% endif %}
 
-=======
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
                     </div>
                   </div>
                 </div>
@@ -237,39 +234,20 @@
   body {
     background-color: #f8f9fa;
   }
-<<<<<<< HEAD
-=======
-
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
   .card {
     border-radius: 15px;
     border: none;
     transition: transform 0.3s ease-in-out;
   }
-<<<<<<< HEAD
   .card:hover {
     transform: translateY(-5px);
   }
-=======
-
-  .card:hover {
-    transform: translateY(-3px);
-  }
-
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
   .card-header {
     border-top-left-radius: 15px;
     border-top-right-radius: 15px;
   }
-<<<<<<< HEAD
   /* Style form fields */
   form input, form select, form textarea {
-=======
-
-  form input,
-  form select,
-  form textarea {
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
     display: block;
     width: 100%;
     padding: 0.375rem 0.75rem;
@@ -281,38 +259,17 @@
     background-clip: padding-box;
     border: 1px solid #ced4da;
     border-radius: 0.25rem;
-<<<<<<< HEAD
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   }
   form input:focus, form select:focus, form textarea:focus {
-=======
-    transition: border-color 0.15s ease-in-out,
-                box-shadow 0.15s ease-in-out;
-  }
-
-  form input:focus,
-  form select:focus,
-  form textarea:focus {
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
     border-color: #86b7fe;
     outline: 0;
     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
   }
-<<<<<<< HEAD
-=======
-
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
   @media (max-width: 767.98px) {
     .card-body {
       padding: 1rem;
     }
-<<<<<<< HEAD
-=======
-
-    .table {
-      font-size: 0.85rem;
-    }
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
   }
 </style>
 

@@ -58,13 +58,9 @@ class Command(BaseCommand):
         for movie in movies:
             for theater_name in theater_names:
 
-<<<<<<< HEAD
                 # Offsets -4..-1 are shows in the next four days (bookable now);
                 # offsets 0..5 are shows that already happened (booking history).
                 for day_offset in range(-4, 6):
-=======
-                for day_offset in range(10):
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
                     show_time = now - timedelta(
                         days=day_offset,
                         hours=random.randint(0, 23)
@@ -146,7 +142,6 @@ class Command(BaseCommand):
                 Payment.objects.bulk_create(payment_batch)
 
                 with connection.cursor() as cursor:
-<<<<<<< HEAD
                     # auto_now_add overwrites created_at during bulk_create, so write the
                     # intended timestamps back from the metadata, not from the instances.
                     cursor.executemany(
@@ -154,13 +149,6 @@ class Command(BaseCommand):
                         [
                             (meta['fake_time'], p.id)
                             for p, meta in zip(payment_batch, pending_meta)
-=======
-                    cursor.executemany(
-                        "UPDATE movies_payment SET created_at = %s WHERE id = %s",
-                        [
-                            (p.created_at, p.id)
-                            for p in payment_batch
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
                         ],
                     )
 
@@ -200,17 +188,12 @@ class Command(BaseCommand):
                     cursor.executemany(
                         "UPDATE movies_booking SET booked_at = %s, cancelled_at = %s WHERE id = %s",
                         [
-<<<<<<< HEAD
                             (
                                 meta['fake_time'],
                                 meta['fake_time'] if meta['is_cancelled'] else None,
                                 b.id,
                             )
                             for b, meta in zip(booking_batch, pending_meta)
-=======
-                            (b.booked_at, b.cancelled_at, b.id)
-                            for b in booking_batch
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
                         ],
                     )
 

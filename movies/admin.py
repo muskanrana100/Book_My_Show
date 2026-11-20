@@ -1,5 +1,4 @@
 from django.contrib import admin
-<<<<<<< HEAD
 from django.db.models import Count
 from django.utils import timezone
 
@@ -10,20 +9,11 @@ from .models import (
 )
 
 
-=======
-
-from .models import(
-    Booking, CastMember, Genre, Language, Movie, MovieCast,
-    MoviePoster, Payment,RecentlyViewed, Review, ReviewReport, Seat, Theater,
-)
-
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 class MovieCastInline(admin.TabularInline):
     model = MovieCast
     extra = 1
     autocomplete_fields = ['cast_member']
 
-<<<<<<< HEAD
 
 class MoviePosterInline(admin.TabularInline):
     model = MoviePoster
@@ -69,36 +59,17 @@ class GenreAdmin(admin.ModelAdmin):
         return obj._movies
 
 
-=======
-class MoviePosterInline(admin.TabularInline):
-    model = MoviePoster
-    extra = 1
-
-class  TheaterInline(admin.TabularInline):
-    model = Theater
-    extra = 1
-
-@admin.register(Genre)
-class GenreAdmin(admin.ModelAdmin):
-    list_display = ['name']
-    search_fields = ['name']
-
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 @admin.register(Language)
 class LanguageAdmin(admin.ModelAdmin):
     list_display = ['name']
     search_fields = ['name']
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 @admin.register(CastMember)
 class CastMemberAdmin(admin.ModelAdmin):
     list_display = ['name']
     search_fields = ['name']
 
-<<<<<<< HEAD
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
@@ -257,54 +228,3 @@ class ReviewReportAdmin(admin.ModelAdmin):
 class RecentlyViewedAdmin(admin.ModelAdmin):
     list_display = ['user', 'movie', 'viewed_at']
     list_filter = ['movie']
-=======
-@admin.register(Payment)
-class PaymentAdmin(admin.ModelAdmin):
-    list_display = ['razorpay_order_id', 'user','theater','amount','status','created_at']
-    list_filter = ['status','theater']
-    search_fields = ['razorpay_order_id', 'razorpay_payment_id','user__username']
-    readonly_fields = ['razorpay_order_id','razorpay_payment_id','razorpay_signature']
-
-@admin.register(Movie)
-class MovieAdmin(admin.ModelAdmin):
-    list_display = ['name', 'release_date' ,'age_certificate','duration_display','average_rating','total_ratings',]
-    list_filter= ['age_certificate', 'genres','languages']
-    search_fields= ['name','description']
-    prepopulated_fields ={'slug':('name',)}
-    filter_horizontal = ['genres', 'languages']
-    readonly_fields = ['average_rating','total_ratings']
-    inlines = [MovieCastInline, MoviePosterInline, TheaterInline]
-
-@admin.register(Theater)
-class TheaterAdmin(admin.ModelAdmin):
-    list_display = ['name',"movie",'time','city', 'price_per_seat']
-    list_filter= ["city", "movie"]
-    ordering = ['time']
-
-@admin.register(Seat)
-class SeatAdmin(admin.ModelAdmin):
-    list_display = ['theater','seat_number','is_booked']
-    list_filter =["is_booked", 'theater']
-
-@admin.register(Booking)
-class BookingAdmin(admin.ModelAdmin):
-    list_display = ['user','seat','movie','theater','booked_at']
-    list_filter = ['movie','theater']
-
-@admin.register(Review)
-class ReviewAdmin(admin.ModelAdmin):
-    list_display= ['movie', 'user' ,'rating', 'is_verified_viewer', 'report_count','is_hidden','created_at']
-    list_filter = ['rating', 'is_verified_viewer', 'is_hidden']
-    search_fields= ['movie__name','user__username','body']
-    readonly_fields = ['is_verified_viewer','is_edited', 'report_count']
-
-@admin.register(ReviewReport)
-class ReviewReportAdmin(admin.ModelAdmin):
-    list_display = ['review', 'reported_by', 'reason', 'created_at']
-    list_filter =['reason']
-
-@admin.register(RecentlyViewed)
-class RecentlyViewedAdmin(admin.ModelAdmin):
-    list_display= ["user", "movie", "viewed_at"]
-    list_filter = ["movie"]
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b

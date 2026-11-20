@@ -10,10 +10,7 @@ class UserRegisterForm(UserCreationForm):
         fields = ['username', 'email', 'password1', 'password2']
 
 class UserUpdateForm(forms.ModelForm):
-<<<<<<< HEAD
     
-=======
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
     email = forms.EmailField()
 
     class Meta:

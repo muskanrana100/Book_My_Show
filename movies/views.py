@@ -1,16 +1,9 @@
-<<<<<<< HEAD
 
-=======
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 import csv
 import hmac
 import hashlib
 import json
-<<<<<<< HEAD
 from datetime import date, datetime, time, timedelta, timezone as dt_timezone
-=======
-from datetime import datetime, timedelta
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 from decimal import Decimal
 
 from django.shortcuts import get_object_or_404, render
@@ -22,26 +15,19 @@ from django.conf import settings
 from django.db import OperationalError
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-<<<<<<< HEAD
 from django.contrib.auth.decorators import permission_required
-=======
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import IntegrityError, transaction
 from django.core.paginator import Paginator
-<<<<<<< HEAD
 from django.db.models import Func, DateField
-=======
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 from django.db.models import Count, Sum, Avg, F, Q, OuterRef, Subquery, Min, Exists
 from django.db.models.functions import TruncDate, TruncWeek, TruncMonth, TruncYear, ExtractHour
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-<<<<<<< HEAD
 from django.views.decorators.http import require_GET, require_POST
 
 from .forms import ReviewForm, ReviewReportForm
@@ -197,12 +183,6 @@ def _discovery_queryset(search_query, genre_id, language_id, city, theater_id,
     movies = movies.order_by(sort_map.get(sort_by, '-booking_count'))
 
     return movies, date_errors
-=======
-from django.views.decorators.http import require_POST
-
-from .forms import ReviewForm, ReviewReportForm
-from .models import Booking,Genre, Language, Movie, Payment, Review,RecentlyViewed, Seat, Theater
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
 
 def movie_list(request):
@@ -223,7 +203,6 @@ def movie_list(request):
 
     sort_by = request.GET.get('sort', 'popularity').strip()
 
-<<<<<<< HEAD
     movies, date_errors = _discovery_queryset(
         search_query, genre_id, language_id, city, theater_id,
         date_from, date_to, release_from, release_to,
@@ -243,292 +222,12 @@ def movie_list(request):
             request.user
         )
 
-=======
-    # ============================================================
-    # 1. BASE MOVIE QUERY
-    # ============================================================
-
-    movies = Movie.objects.all()
-
-    # ============================================================
-    # 2. SEARCH
-    # ============================================================
-
-    if search_query:
-        movies = movies.filter(
-            name__icontains=search_query
-        )
-
-    # ============================================================
-    # 3. GENRE
-    # ============================================================
-
-    if genre_id:
-        movies = movies.filter(
-            genres__id=genre_id
-        )
-
-    # ============================================================
-    # 4. LANGUAGE
-    # ============================================================
-
-    if language_id:
-        movies = movies.filter(
-            languages__id=language_id
-        )
-
-    # ============================================================
-    # 5. RATING
-    # ============================================================
-
-    if min_rating:
-        try:
-            rating = float(min_rating)
-
-            movies = movies.filter(
-                average_rating__gte=rating
-            )
-
-        except (ValueError, TypeError):
-            pass
-
-    # ============================================================
-    # 6. RELEASE DATE
-    # ============================================================
-
-    if release_from:
-        try:
-            release_start = datetime.strptime(
-                release_from,
-                '%Y-%m-%d'
-            ).date()
-
-            movies = movies.filter(
-                release_date__gte=release_start
-            )
-
-        except ValueError:
-            pass
-
-    if release_to:
-        try:
-            release_end = datetime.strptime(
-                release_to,
-                '%Y-%m-%d'
-            ).date()
-
-            movies = movies.filter(
-                release_date__lte=release_end
-            )
-
-        except ValueError:
-            pass
-
-    # ============================================================
-    # 7. THEATER FILTERS
-    #
-    # IMPORTANT:
-    # Use EXISTS instead of joining Theater directly.
-    # This prevents duplicate Movie rows and avoids the expensive
-    # DISTINCT operation over the large joined query.
-    # ============================================================
-
-    theater_filter = Q()
-
-    if city:
-        theater_filter &= Q(
-            city__icontains=city
-        )
-
-    if theater_id:
-        theater_filter &= Q(
-            id=theater_id
-        )
-
-    # Show date FROM
-    if date_from:
-        try:
-            show_date_from = datetime.strptime(
-                date_from,
-                '%Y-%m-%d'
-            ).date()
-
-            theater_filter &= Q(
-                time__date__gte=show_date_from
-            )
-
-        except ValueError:
-            pass
-
-    # Show date TO
-    if date_to:
-        try:
-            show_date_to = datetime.strptime(
-                date_to,
-                '%Y-%m-%d'
-            ).date()
-
-            theater_filter &= Q(
-                time__date__lte=show_date_to
-            )
-
-        except ValueError:
-            pass
-
-    # ============================================================
-    # 8. SHOW-TIME FILTER
-    # ============================================================
-
-    SHOW_TIME_SLOTS = {
-        'morning': (6, 12),
-        'afternoon': (12, 16),
-        'evening': (16, 20),
-        'night': (20, 24),
-    }
-
-    if show_time_slot in SHOW_TIME_SLOTS:
-
-        start_hour, end_hour = SHOW_TIME_SLOTS[
-            show_time_slot
-        ]
-
-        theater_filter &= Q(
-            time__hour__gte=start_hour,
-            time__hour__lt=end_hour
-        )
-
-    # Apply theater existence check only when a theater filter
-    # has actually been selected.
-    if theater_filter:
-
-        matching_theater = Theater.objects.filter(
-            movie=OuterRef('pk')
-        ).filter(
-            theater_filter
-        )
-
-        movies = movies.filter(
-            Exists(matching_theater)
-        )
-
-    # ============================================================
-    # 9. REMOVE DUPLICATES FROM GENRE/LANGUAGE JOINS
-    # ============================================================
-
-    movies = movies.distinct()
-
-    # ============================================================
-    # 10. POPULARITY
-    #
-    # Booking has related_name='bookings'.
-    #
-    # Count only non-cancelled bookings.
-    # distinct=True prevents duplicate counts if the movie query
-    # has joins through genres/languages.
-    # ============================================================
-
-    movies = movies.annotate(
-        booking_count=Count(
-            'bookings',
-            filter=Q(
-                bookings__is_cancelled=False
-            ),
-            distinct=True
-        )
-    )
-
-    # ============================================================
-    # 11. LOWEST TICKET PRICE
-    # ============================================================
-
-    lowest_price_sq = (
-        Theater.objects
-        .filter(
-            movie=OuterRef('pk')
-        )
-        .values('movie')
-        .annotate(
-            minimum_price=Min(
-                'price_per_seat'
-            )
-        )
-        .values('minimum_price')
-    )
-
-    movies = movies.annotate(
-        lowest_price=Subquery(
-            lowest_price_sq
-        )
-    )
-
-    # ============================================================
-    # 12. SORTING
-    # ============================================================
-
-    sort_map = {
-        'popularity': '-booking_count',
-        'newest': '-release_date',
-        'rating': '-average_rating',
-        'price_low': 'lowest_price',
-        'price_high': '-lowest_price',
-    }
-
-    movies = movies.order_by(
-        sort_map.get(
-            sort_by,
-            '-booking_count'
-        )
-    )
-
-    # ============================================================
-    # 13. TOTAL COUNT
-    # ============================================================
-
-    total_count = movies.count()
-
-    # ============================================================
-    # 14. PAGINATION
-    # ============================================================
-
-    paginator = Paginator(
-        movies,
-        12
-    )
-
-    page_number = request.GET.get(
-        'page',
-        1
-    )
-
-    page_obj = paginator.get_page(
-        page_number
-    )
-
-    # ============================================================
-    # 15. RECOMMENDATIONS
-    # ============================================================
-
-    recommended_movies = []
-
-    if request.user.is_authenticated:
-        recommended_movies = _get_recommendations(
-            request.user
-        )
-
-    # ============================================================
-    # 16. CONTEXT
-    # ============================================================
-
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
     context = {
         'movies': page_obj,
         'page_obj': page_obj,
 
         'total_count': total_count,
-<<<<<<< HEAD
         'date_errors': date_errors,
-=======
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
         'genres': Genre.objects.all(),
         'languages': Language.objects.all(),
@@ -536,22 +235,12 @@ def movie_list(request):
         'theaters': (
             Theater.objects
             .order_by('name')
-<<<<<<< HEAD
             .values_list('name', flat=True)
-=======
-            .values(
-                'id',
-                'name'
-            )
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
             .distinct()
         ),
 
         'recommended_movies': recommended_movies,
-<<<<<<< HEAD
         'recommendations_personal': recommendations_personal,
-=======
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
         'search_query': search_query,
         'selected_genre': genre_id,
@@ -571,7 +260,6 @@ def movie_list(request):
         'sort_by': sort_by,
     }
 
-<<<<<<< HEAD
     return render(request, 'movies/movie_list.html', context)
 
 
@@ -605,13 +293,6 @@ def discovery_count(request):
         'count': movies.count(),
         'errors': date_errors,
     })
-=======
-    return render(
-        request,
-        'movies/movie_list.html',
-        context
-    )
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
 
 def _get_recommendations(user, limit=8):
@@ -620,7 +301,6 @@ def _get_recommendations(user, limit=8):
     either booked or recently viewed, excluding movies they've already
     booked. Falls back to trending movies if there's no history yet.
     """
-<<<<<<< HEAD
     booked_movie_ids = list(
         Booking.objects.filter(
             user=user,
@@ -628,36 +308,23 @@ def _get_recommendations(user, limit=8):
             payment__status=Payment.STATUS_SUCCESS,
         ).values_list('movie_id', flat=True)
     )
-=======
-    booked_movie_ids = Booking.objects.filter(user=user).values_list('movie_id', flat=True)
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
     viewed_movie_ids = RecentlyViewed.objects.filter(user=user).values_list('movie_id', flat=True)
     interest_movie_ids = list(booked_movie_ids) + list(viewed_movie_ids)
 
     if not interest_movie_ids:
-<<<<<<< HEAD
         fallback = Movie.objects.filter(is_published=True).order_by('-total_ratings', '-average_rating')[:limit]
         return list(fallback), False
-=======
-        return Movie.objects.order_by('-total_ratings', '-average_rating')[:limit]
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
     genre_ids = Genre.objects.filter(movies__id__in=interest_movie_ids).values_list('id', flat=True)
     language_ids = Language.objects.filter(movies__id__in=interest_movie_ids).values_list('id', flat=True)
 
-<<<<<<< HEAD
     recommended = list(
         Movie.objects.filter(is_published=True)
         .filter(Q(genres__id__in=genre_ids) | Q(languages__id__in=language_ids))
-=======
-    recommended = (
-        Movie.objects.filter(Q(genres__id__in=genre_ids) | Q(languages__id__in=language_ids))
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
         .exclude(id__in=booked_movie_ids)
         .distinct()
         .order_by('-average_rating', '-total_ratings')[:limit]
     )
-<<<<<<< HEAD
     if not recommended:
         fallback = Movie.objects.filter(is_published=True).order_by('-total_ratings', '-average_rating')[:limit]
         return list(fallback), False
@@ -802,137 +469,15 @@ def theater_list(request, movie_id):
     movie = get_object_or_404(Movie, id=movie_id)
     if not movie.is_published and not request.user.is_staff:
         raise Http404("Movie not found.")
-=======
-    return recommended
-
-def movie_detail(request, slug):
-    movie = get_object_or_404(
-        Movie.objects.prefetch_related(
-            "genres",
-            "languages",
-            "gallery_images",
-            "movie_cast__cast_member",
-        ),
-        slug=slug
-    )
-
-    reviews = (
-        movie.reviews
-        .filter(is_hidden=False)
-        .select_related("user")
-    )
-
-    if request.user.is_authenticated:
-        try:
-            RecentlyViewed.objects.update_or_create(
-                user=request.user,
-                movie=movie
-            )
-        except OperationalError:
-            pass
-
-    user_review = None
-    can_review = False
-    review_form = None
-
-    if request.user.is_authenticated:
-        user_review = reviews.filter(
-            user=request.user
-        ).first()
-
-        has_watched = Booking.objects.filter(
-            user=request.user,
-            movie=movie,
-            theater__time__lt=timezone.now()
-        ).exists()
-
-        can_review = has_watched and user_review is None
-
-        if request.method == "POST" and "submit_review" in request.POST:
-
-            if user_review:
-                review_form = ReviewForm(
-                    request.POST,
-                    instance=user_review
-                )
-
-            elif can_review:
-                review_form = ReviewForm(request.POST)
-
-            else:
-                messages.error(
-                    request,
-                    "You can only review a movie after booking and watching it."
-                )
-                review_form = None
-
-            if review_form and review_form.is_valid():
-                review = review_form.save(commit=False)
-                review.movie = movie
-                review.user = request.user
-                review.save()
-
-                messages.success(
-                    request,
-                    "Your review has been saved."
-                )
-
-                return redirect(
-                    "movie_detail",
-                    slug=movie.slug
-                )
-
-        else:
-            if user_review:
-                review_form = ReviewForm(
-                    instance=user_review
-                )
-            elif can_review:
-                review_form = ReviewForm()
-
-    context = {
-        "movie": movie,
-        "reviews": reviews,
-        "user_review": user_review,
-        "can_review": can_review,
-        "review_form": review_form,
-        "similar_movies": movie.similar_movies(),
-        "trending_movies": Movie.objects.exclude(
-            id=movie.id
-        ).order_by(
-            "-total_ratings",
-            "-average_rating"
-        )[:8],
-        "recent_movies": Movie.objects.exclude(
-            id=movie.id
-        ).order_by(
-            "-release_date"
-        )[:8],
-    }
-
-    return render(
-        request,
-        "movies/movie_detail.html",
-        context
-    )
-
-    
-def theater_list(request, movie_id):
-    movie = get_object_or_404(Movie, id=movie_id)
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
     theaters = Theater.objects.filter(movie=movie)
     return render(request, "movies/theater_list.html" , {"movie" : movie ,"theaters": theaters})
 
 
 @login_required(login_url='/login/')
 def seat_selection(request, theater_id):
-<<<<<<< HEAD
     theater = get_object_or_404(Theater.objects.select_related("movie"), id=theater_id)
     if not theater.movie.is_published and not request.user.is_staff:
         raise Http404("Show not found.")
-=======
-    theater = get_object_or_404(Theater, id=theater_id)
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
     seats = Seat.objects.filter(theater=theater)
     for seat in seats:
         seat.display_status = seat.status_for(request.user)
@@ -951,16 +496,8 @@ def download_ticket(request, booking_id):
         user=request.user,
     )
 
-<<<<<<< HEAD
     if booking.is_cancelled or not booking.payment:
         raise Http404("No valid ticket for this booking.")
-=======
-    if not booking.payment:
-        return HttpResponse(
-            "No payment information found.",
-            status=404,
-        )
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
     bookings = list(
         Booking.objects.select_related(
@@ -994,14 +531,11 @@ def download_ticket(request, booking_id):
 
 
 def verify_ticket(request, booking_id):
-<<<<<<< HEAD
     # Verification links carry a signed token. Plain sequential booking IDs
     # would let anyone enumerate other people's bookings.
     if not is_valid_verify_token(request.GET.get("t", ""), booking_id):
         raise Http404("Invalid ticket link.")
 
-=======
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
     booking = get_object_or_404(
         Booking.objects.select_related(
             "movie",
@@ -1027,7 +561,6 @@ def verify_ticket(request, booking_id):
         },
     )
 
-<<<<<<< HEAD
 
 @login_required(login_url="/login/")
 @require_POST
@@ -1041,32 +574,11 @@ def hold_seat(request, theater_id, seat_id):
     return _reservation_response(
         lambda: reservations.reserve(request.user, theater, sorted(set(current) | {seat_id}))
     )
-=======
-@login_required(login_url="/login/")
-@require_POST
-def hold_seat(request, theater_id, seat_id):
-    with transaction.atomic():
-        seat = get_object_or_404(
-            Seat.objects.select_for_update() , id=seat_id,theater_id=theater_id)
-
-        if seat.is_booked:
-            return JsonResponse( {"success":False, 'reason' : "This seat is already booked."}, status=409)
-
-        if seat.is_hold_active() and seat.held_by_id != request.user.id:
-            return JsonResponse({ "success" : False, "reason":"This seat is currently held by another user."} ,status=409)
-
-        seat.held_by = request.user
-        seat.held_until = timezone.now() + Seat.HOLD_DURATION
-        seat.save(update_fields=["held_by","held_until" ])
-
-    return JsonResponse({'success': True, "held_until" : seat.held_until.isoformat()})
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
 
 @login_required(login_url="/login/")
 @require_POST
 def release_seat(request, theater_id, seat_id):
-<<<<<<< HEAD
     theater = get_object_or_404(Theater, id=theater_id)
     try:
         result = reservations.release(request.user, theater, [seat_id])
@@ -1128,31 +640,11 @@ def seat_status(request, theater_id):
         "seats": reservations.seat_states_for(request.user, theater),
         "server_time": timezone.now().isoformat(),
     })
-=======
-    with transaction.atomic():
-        seat = get_object_or_404(
-            Seat.objects.select_for_update(), id=seat_id, theater_id=theater_id
-        )
-        if seat.held_by_id == request.user.id:
-            seat.held_by = None
-            seat.held_until = None
-            seat.save(update_fields=["held_by", "held_until"])
-
-    return JsonResponse({"success" : True} )
-
-
-def seat_status(request, theater_id):
-    theater = get_object_or_404(Theater, id=theater_id)
-    seats = Seat.objects.filter(theater=theater)
-    data = [ {"id": seat.id, "status": seat.status_for(request.user) } for seat in seats]
-    return JsonResponse({"seats" : data})
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
 
 @login_required(login_url="/login/")
 @require_POST
 def confirm_booking(request, theater_id):
-<<<<<<< HEAD
     return JsonResponse(
         {
             "success": False,
@@ -1164,47 +656,6 @@ def confirm_booking(request, theater_id):
         status=403,
     )
 
-=======
-    theater = get_object_or_404(Theater, id=theater_id)
-    booked_seat_numbers = []
-    failed_seats = []
-
-    with transaction.atomic():
-        my_seats = Seat.objects.select_for_update().filter( theater=theater, held_by=request.user)
-
-        if not my_seats.exists():
-            return JsonResponse({'success': False ,"reason" :"You have no held seats. Please select seats again."} , status=400)
-
-        for seat in my_seats:
-            if seat.is_booked or not seat.is_hold_active():
-                failed_seats.append(seat.seat_number)
-                continue
-            try:
-                Booking.objects.create(user=request.user, seat=seat, movie=theater.movie, theater=theater)
-            except IntegrityError:
-                failed_seats.append(seat.seat_number)
-                continue
-
-            seat.is_booked = True
-            seat.held_by = None
-            seat.held_until = None
-            seat.save(update_fields=['is_booked',"held_by", "held_until"])
-            booked_seat_numbers.append(seat.seat_number)
-
-    if failed_seats and not booked_seat_numbers:
-        return JsonResponse({
-            "success" : False,
-            "reason" : f"These seats are no longer available: {', '.join(failed_seats)}. Please reselect.",
-        }, status=409)
-
-    if failed_seats:
-        messages.warning(
-            request, f"Some seats couldn't be booked (already taken): {', '.join(failed_seats)}."
-        )
-
-    messages.success(request, f"Booking confirmed for seats: {', '.join(booked_seat_numbers)}.")
-    return JsonResponse({"success": True, "redirect_url" : '/profile/'})
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
 
 def get_razorpay_client():
@@ -1213,7 +664,6 @@ def get_razorpay_client():
 
 @login_required(login_url='/login/')
 @require_POST
-<<<<<<< HEAD
 
 def create_payment(request, theater_id):
     theater = get_object_or_404(Theater, id=theater_id)
@@ -1264,41 +714,11 @@ def create_payment(request, theater_id):
             existing.status = Payment.STATUS_FAILED
             existing.failure_reason = "Checkout was not completed."
             existing.save(update_fields=["status", "failure_reason", "updated_at"])
-=======
-def create_payment(request, theater_id):
-    theater = get_object_or_404(Theater, id=theater_id)
-
-    with transaction.atomic():
-        my_seats = list(
-            Seat.objects.select_for_update().filter(theater=theater, held_by=request.user)
-        )
-
-        valid_seats = [s for s in my_seats if not s.is_booked and s.is_hold_active()]
-        if not valid_seats:
-            return JsonResponse(
-                {"success" : False,"reason": "Your seat hold has expired. Please select seats again."  }, status=400,
-            )
-
-        amount_rupees = theater.price_per_seat * len(valid_seats)
-        amount_paise = int(amount_rupees * 100)
-
-        client = get_razorpay_client()
-        razorpay_order = client.order.create({
-            "amount" : amount_paise,
-            "currency": 'INR',
-            "payment_capture" : 1,
-            "notes" : {
-                "user_id" : str(request.user.id),
-                "theater_id": str(theater.id),
-            } ,
-        } )
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
         payment = Payment.objects.create(
             user=request.user,
             theater=theater,
             amount=amount_rupees,
-<<<<<<< HEAD
             currency="INR",
             status=Payment.STATUS_CREATED,
             razorpay_order_id=None,
@@ -1356,24 +776,6 @@ def _checkout_response(request, theater, payment, amount_paise, order_id=None):
         "user_email": request.user.email,
     })
 
-=======
-            razorpay_order_id=razorpay_order['id'],
-        )
-        payment.seats.set(valid_seats)
-
-    return JsonResponse({
-        "success" : True ,
-        "order_id" : razorpay_order['id'],
-        "amount_paise":amount_paise,
-        "currency" : "INR",
-        "key_id" :settings.RAZORPAY_KEY_ID ,
-        "payment_db_id" : payment.id ,
-        "movie_name" : theater.movie.name,
-        "user_email": request.user.email,
-    })
-
-
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 @login_required(login_url="/login/")
 @require_POST
 def verify_payment(request):
@@ -1381,33 +783,18 @@ def verify_payment(request):
     payment_id = request.POST.get("razorpay_payment_id")
     signature = request.POST.get("razorpay_signature")
 
-<<<<<<< HEAD
     if not (order_id and payment_id and signature):
         return JsonResponse(
             {"success": False, "reason": "Missing payment details."},
             status=400,
         )
 
-=======
-    # Check required Razorpay details
-    if not (order_id and payment_id and signature):
-        return JsonResponse(
-            {
-                "success": False,
-                "reason": "Missing payment details.",
-            },
-            status=400,
-        )
-
-    # Find the payment belonging to the logged-in user
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
     payment = get_object_or_404(
         Payment,
         razorpay_order_id=order_id,
         user=request.user,
     )
 
-<<<<<<< HEAD
     # Idempotent: a repeated browser callback for a settled payment just reports success.
     if payment.status == Payment.STATUS_SUCCESS:
         return JsonResponse({"success": True, "redirect_url": "/profile/"})
@@ -1471,56 +858,6 @@ def record_payment_failure(request):
 
     return JsonResponse({"success": True})
 
-=======
-    client = get_razorpay_client()
-
-    # Verify Razorpay signature
-    try:
-        client.utility.verify_payment_signature(
-            {
-                "razorpay_order_id": order_id,
-                "razorpay_payment_id": payment_id,
-                "razorpay_signature": signature,
-            }
-        )
-
-    except razorpay.errors.SignatureVerificationError:
-        payment.mark_failed(
-            reason="Signature verification failed."
-        )
-
-        return JsonResponse(
-            {
-                "success": False,
-                "reason": "Payment verification failed.",
-            },
-            status=400,
-        )
-
-    # Mark payment successful
-    # This also creates the Booking records.
-    payment.mark_success(
-        payment_id,
-        signature,
-    )
-
-    # Queue ticket email asynchronously
-    from .tasks import send_booking_ticket_email
-
-    send_booking_ticket_email.delay(payment.id)
-
-    messages.success(
-        request,
-        "Payment successful! Your booking is confirmed.",
-    )
-
-    return JsonResponse(
-        {
-            "success": True,
-            "redirect_url": "/profile/",
-        }
-    ) 
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
 @login_required(login_url="/login/")
 @require_POST
@@ -1539,7 +876,6 @@ def cancel_payment(request , theater_id):
 @csrf_exempt
 @require_POST
 def razorpay_webhook(request):
-<<<<<<< HEAD
     secret = settings.RAZORPAY_WEBHOOK_SECRET
 
     # Fail closed. With an empty secret the HMAC key is public, so anyone could
@@ -1642,118 +978,6 @@ def report_review(request, review_id):
 
     messages.success(request, "Thanks - this review has been reported to our moderators.")
     return detail_url
-=======
-    body = request.body
-
-    received_signature = request.headers.get(
-        "X-Razorpay-Signature",
-        "",
-    )
-
-    # Generate expected webhook signature
-    expected_signature = hmac.new(
-        key=settings.RAZORPAY_WEBHOOK_SECRET.encode("utf-8"),
-        msg=body,
-        digestmod=hashlib.sha256,
-    ).hexdigest()
-
-    # Verify webhook signature
-    if not hmac.compare_digest(
-        expected_signature,
-        received_signature,
-    ):
-        return JsonResponse(
-            {
-                "error": "Invalid signature",
-            },
-            status=400,
-        )
-
-    # Read webhook data
-    event = json.loads(body)
-    event_type = event.get("event")
-
-    # ============================================================
-    # PAYMENT CAPTURED
-    # ============================================================
-
-    if event_type == "payment.captured":
-
-        payload = event["payload"]["payment"]["entity"]
-
-        order_id = payload["order_id"]
-        payment_id = payload["id"]
-
-        try:
-            payment = Payment.objects.get(
-                razorpay_order_id=order_id
-            )
-
-            # Mark payment successful
-            payment.mark_success(
-                payment_id,
-                razorpay_signature="verified-via-webhook",
-            )
-
-            # Send ticket email asynchronously
-            from .tasks import send_booking_ticket_email
-
-            send_booking_ticket_email.delay(payment.id)
-
-        except Payment.DoesNotExist:
-            pass
-
-    # ============================================================
-    # PAYMENT FAILED
-    # ============================================================
-
-    elif event_type == "payment.failed":
-
-        payload = event["payload"]["payment"]["entity"]
-
-        order_id = payload["order_id"]
-
-        reason = payload.get(
-            "error_description",
-            "Payment failed",
-        )
-
-        try:
-            payment = Payment.objects.get(
-                razorpay_order_id=order_id
-            )
-
-            payment.mark_failed(
-                reason=reason
-            )
-
-        except Payment.DoesNotExist:
-            pass
-
-    return JsonResponse(
-        {
-            "status": "ok",
-        }
-    )
-
-    
-@login_required(login_url='/login/')
-def report_review(request, review_id):
-    review = get_object_or_404(Review, id=review_id)
-    if request.method == "POST" :
-        form = ReviewReportForm(request.POST)
-        if form.is_valid():
-            report = form.save(commit= False)
-            report.review = review
-            report.reported_by = request.user
-            try:
-                report.save()
-                messages.success(request,"Thanks - this review has been reported to our moderators.")
-            except IntegrityError:
-                messages.success(request , "You have already reported this review" )
-
-    return redirect("movie_detail" , slug=review.movie.slug)
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
 
 @login_required(login_url="/login/")
@@ -1766,26 +990,16 @@ def delete_review(request, review_id):
     return redirect("movie_detail", slug=movie_slug)
 
 
-<<<<<<< HEAD
 @login_required(login_url="/login/")
 @require_POST
 def cancel_booking(request, booking_id):
     """
     Lets a user cancel their own booking. If it was paid for, a real refund is
     issued via Razorpay first. The seat is released only after the refund succeeds.
-=======
-@login_required(login_url= "/login/")
-@require_POST
-def cancel_booking(request, booking_id):
-    """
-    Lets a user cancel their own booking. If it was paid for, this issues
-    a real refund via Razorpay before releasing the seat back to availability.
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
     """
     booking = get_object_or_404(Booking, id=booking_id, user=request.user)
 
     if booking.is_cancelled:
-<<<<<<< HEAD
         messages.info(request, "This booking had already been cancelled.")
         return redirect("profile")
 
@@ -1803,27 +1017,10 @@ def cancel_booking(request, booking_id):
         messages.success(request, "Booking cancelled successfully.")
 
     return redirect("profile")
-=======
-        messages.info(request, "This booking had already been cancelled." )
-        return redirect("profile")
-
-    client = get_razorpay_client()
-    booking.cancel_and_refund(client)
-
-    if booking.refund_status == Booking.REFUND_REFUNDED:
-        messages.success(request, f"Booking cancelled and ₹{booking.refund_amount} refunded successfully." )
-    elif booking.refund_status == Booking.REFUND_FAILED:
-        messages.warning(request , "Booking cancelled, but the refund could not be processed automatically. Our team will follow up.")
-    else:
-        messages.success(request ,"Booking cancelled successfully.")
-
-    return redirect('profile')
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
 
 def _parse_date_range(request):
     """
-<<<<<<< HEAD
     Reads ?start=YYYY-MM-DD and ?end=YYYY-MM-DD. Returns (start, end, error).
 
     end is exclusive internally (the selected end date plus one day), so the selected end
@@ -1838,29 +1035,10 @@ def _parse_date_range(request):
     start_param = request.GET.get("start", "").strip()
     end_param = request.GET.get("end", "").strip()
     error = None
-=======
-    Reads:
-        ?start=YYYY-MM-DD&end=YYYY-MM-DD
-
-    If no dates are supplied, defaults to the last 30 days.
-    The end date is converted to the next day so that the
-    selected end date is included completely.
-    """
-
-    now = timezone.now()
-
-    # Default: last 30 days
-    default_end = now
-    default_start = now - timedelta(days=30)
-
-    start_param = request.GET.get("start")
-    end_param = request.GET.get("end")
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
     start = default_start
     end = default_end
 
-<<<<<<< HEAD
     try:
         if start_param:
             start = timezone.make_aware(datetime.strptime(start_param, "%Y-%m-%d"))
@@ -1928,33 +1106,6 @@ def _bucket_revenue(daily_rows, key_fn):
 
 @login_required(login_url="/login/")
 @permission_required("movies.view_analytics", raise_exception=True)
-=======
-    if start_param:
-        try:
-            start = timezone.make_aware(
-                datetime.strptime(start_param, "%Y-%m-%d" )
-            )
-        except ValueError:
-            pass
-
-    if end_param :
-        try:
-            end = timezone.make_aware(
-                datetime.strptime(end_param, '%Y-%m-%d')
-            )+ timedelta(days=1)
-        except ValueError:
-            pass
-
-    # Prevent invalid ranges
-    if start>= end:
-        start = default_start
-        end= default_end
-
-    return start, end
-
-
-@staff_member_required
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 def admin_dashboard(request):
     """
     Admin dashboard.
@@ -1965,12 +1116,8 @@ def admin_dashboard(request):
     loading all Booking/Payment objects into Python memory.
     """
 
-<<<<<<< HEAD
     start, end, date_error = _parse_date_range(request)
     movie_id, theater_name, filter_error = _parse_filters(request)
-=======
-    start, end = _parse_date_range(request)
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
     # ============================================================
     # 1. SUCCESSFUL PAYMENTS
@@ -1980,7 +1127,6 @@ def admin_dashboard(request):
         created_at__gte=start,
         created_at__lt=end,
     )
-<<<<<<< HEAD
     if movie_id is not None:
         successful_payments = successful_payments.filter(theater__movie_id=movie_id)
     if theater_name:
@@ -2034,63 +1180,6 @@ def admin_dashboard(request):
     )
     revenue_by_month = _bucket_revenue(daily_rows, lambda d: d.replace(day=1))
     revenue_by_year = _bucket_revenue(daily_rows, lambda d: d.replace(month=1, day=1))
-=======
-
-    # Total revenue
-    total_revenue = (
-        successful_payments
-        .aggregate(total=Sum('amount'))
-        ['total']
-        or Decimal('0')
-    )
-
-
-    # ============================================================
-    # 2. REVENUE BY DAY
-    # ============================================================
-
-    revenue_by_day = list(
-        successful_payments
-        .annotate(period=TruncDate("created_at"))
-        .values("period")
-        .annotate(revenue=Sum("amount"))
-        .order_by("period")
-    )
-
-    # ============================================================
-    # 3. REVENUE BY WEEK
-
-    revenue_by_week = list(
-        successful_payments
-        .annotate(period=TruncWeek("created_at"))
-        .values("period")
-        .annotate(revenue=Sum("amount"))
-        .order_by("period")
-    )
-
-    # ============================================================
-    # 4. REVENUE BY MONTH
-    # ============================================================
-
-    revenue_by_month = list(
-        successful_payments
-        .annotate(period=TruncMonth("created_at"))
-        .values('period')
-        .annotate(revenue=Sum("amount" ))
-        .order_by("period")
-    )
-
-    # ============================================================
-    # 5. REVENUE BY YEAR
-
-    revenue_by_year = list(
-        successful_payments
-        .annotate(period=TruncYear("created_at"))
-        .values("period" )
-        .annotate(revenue=Sum("amount"))
-        .order_by("period")
-    )
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
     # ==========================
     # 6. ACTIVE BOOKINGS
@@ -2101,13 +1190,10 @@ def admin_dashboard(request):
         booked_at__gte=start,
         booked_at__lt=end,
     )
-<<<<<<< HEAD
     if movie_id is not None:
         active_bookings = active_bookings.filter(movie_id=movie_id)
     if theater_name:
         active_bookings = active_bookings.filter(theater__name=theater_name)
-=======
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
     active_count = active_bookings.count()
 
@@ -2117,11 +1203,7 @@ def admin_dashboard(request):
 
     booking_trend = list(
         active_bookings
-<<<<<<< HEAD
         .annotate(period=_IstDay('booked_at'))
-=======
-        .annotate(period=TruncDate('booked_at'))
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
         .values('period')
         .annotate(count=Count('id'))
         .order_by('period')
@@ -2131,7 +1213,6 @@ def admin_dashboard(request):
     # 8. THEATER OCCUPANCY
     # ============================================================
 
-<<<<<<< HEAD
     # Per-show capacity and occupied seats, then combined per theater.
     # Occupied = seats with a NON-cancelled booking. Holds and cancelled seats do not count.
     # Weighted occupancy = total occupied seats / total seat capacity (not an average of percentages).
@@ -2172,46 +1253,10 @@ def admin_dashboard(request):
         occupancy_by_theater.append(t)
     occupancy_by_theater.sort(key=lambda t: t['weighted_pct'], reverse=True)
 
-=======
-    occupancy_by_theater = list(
-        Theater.objects
-        .filter(
-            time__gte=start,
-            time__lt=end,
-        )
-        .annotate(
-            total_seats=Count(
-                'seats',
-                distinct=True,
-            ),
-            booked_seats=Count(
-                'seats',
-                filter=Q(seats__is_booked=True),
-                distinct=True,
-            ),
-        )
-        .filter(total_seats__gt=0)
-        .annotate(
-            occupancy_pct=(
-                F('booked_seats') * 100.0 / F('total_seats')
-            )
-        )
-        .values(
-            'name',
-            'movie__name',
-            'total_seats',
-            'booked_seats',
-            'occupancy_pct',
-        )
-        .order_by('-occupancy_pct')[:20]
-    )
-
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
     # ============================================================
     # 9. MOST BOOKED MOVIES
     # ============================================================
 
-<<<<<<< HEAD
     # Movie rankings. Each measure is its own grouped query so that joining bookings to payments
     # does not multiply revenue. Ranking is by confirmed bookings, then seats, then revenue.
     movie_bookings = (
@@ -2246,22 +1291,11 @@ def admin_dashboard(request):
         })
     top_movies.sort(key=lambda m: (-m['bookings'], -m['seats'], -m['revenue']))
     top_movies = top_movies[:10]
-=======
-    top_movies = list(
-        active_bookings
-        .values('movie__name')
-        .annotate(
-            bookings=Count('id')
-        )
-        .order_by('-bookings')[:10]
-    )
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
     # ============================================================
     # 10. TOP-PERFORMING THEATERS
     # ============================================================
 
-<<<<<<< HEAD
     # Theater performance, ranked by collected revenue (successful payments only).
     # Occupancy and cancellation rate are shown beside the ranking, not mixed into the order.
     venue_revenue = (
@@ -2311,18 +1345,6 @@ def admin_dashboard(request):
         })
     top_theaters.sort(key=lambda t: (-t['revenue'], -t['bookings'], t['name']))
     top_theaters = top_theaters[:10]
-=======
-    top_theaters = list(
-        active_bookings
-        .values('theater__name')
-        .annotate(
-            bookings=Count('id'),
-            revenue=Sum('theater__price_per_seat'),
-        )
-        .order_by('-revenue')[:10]
-    )
-
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
     # ============================================================
     # 11. PEAK BOOKING HOURS
     # ============================================================
@@ -2343,7 +1365,6 @@ def admin_dashboard(request):
     # 12. CANCELLATION + REFUND STATISTICS
     # ============================================================
 
-<<<<<<< HEAD
     # Cancellations and refunds, from the booking records. Only states the existing refund flow
     # actually writes are reported: 'refunded'. 'processing' and 'failed' are not written by the
     # current code, so they are reported as 0 with a note rather than guessed.
@@ -2381,41 +1402,11 @@ def admin_dashboard(request):
     )
     cancellation_stats['full_refunds'] = refund_split['full'] or 0
     cancellation_stats['partial_refunds'] = refund_split['partial'] or 0
-=======
-    cancellation_stats = (
-        Booking.objects
-        .filter(
-            booked_at__gte=start,
-            booked_at__lt=end,
-        )
-        .aggregate(
-            total=Count('id'),
-
-            cancelled=Count(
-                'id',
-                filter=Q(is_cancelled=True),
-            ),
-
-            total_refunded=Sum(
-                'refund_amount',
-                filter=Q(
-                    refund_status=Booking.REFUND_REFUNDED
-                ),
-            ),
-        )
-    )
-
-    cancellation_stats['total_refunded'] = (
-        cancellation_stats['total_refunded']
-        or Decimal('0')
-    )
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
     # ============================================================
     # 13. USER GROWTH
     # ============================================================
 
-<<<<<<< HEAD
     # User growth: registrations in the selected range, the total registered users,
     # and growth against the previous period of equal length (exact, not averaged).
     period_length = end - start
@@ -2430,8 +1421,6 @@ def admin_dashboard(request):
     else:
         user_growth_pct = None  # no previous period to compare against
 
-=======
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
     user_growth = list(
         User.objects
         .filter(
@@ -2457,15 +1446,12 @@ def admin_dashboard(request):
         'end': (end - timedelta(days=1)).date(),
 
         'total_revenue': total_revenue,
-<<<<<<< HEAD
         'filter_movie_id': movie_id,
         'filter_theater': theater_name,
         'filter_error': filter_error,
         'date_error': date_error,
         'refunded_amount': refunded_amount,
         'net_revenue': net_revenue,
-=======
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
         'active_count': active_count,
 
         'revenue_by_day': revenue_by_day,
@@ -2485,13 +1471,10 @@ def admin_dashboard(request):
         'cancellation_stats': cancellation_stats,
 
         'user_growth': user_growth,
-<<<<<<< HEAD
         
         'new_users': new_users,
         'total_users': total_users,
         'user_growth_pct': user_growth_pct,
-=======
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
         # JSON for Chart.js
         'revenue_by_day_json': json.dumps(
@@ -2537,12 +1520,8 @@ def admin_dashboard(request):
     )
 
 
-<<<<<<< HEAD
 @login_required(login_url="/login/")
 @permission_required("movies.view_analytics", raise_exception=True)
-=======
-@staff_member_required
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 def admin_dashboard_export_csv(request):
     """
     Streams booking data as CSV.
@@ -2551,7 +1530,6 @@ def admin_dashboard_export_csv(request):
     memory simultaneously.
     """
 
-<<<<<<< HEAD
     start, end, date_error = _parse_date_range(request)
     movie_id, theater_name, _filter_error = _parse_filters(request)
     
@@ -2564,9 +1542,6 @@ def admin_dashboard_export_csv(request):
     if theater_name:
         export_qs = export_qs.filter(theater__name=theater_name)
        
-=======
-    start, end = _parse_date_range(request)
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
     class Echo:
         def write(self, value):
@@ -2589,7 +1564,6 @@ def admin_dashboard_export_csv(request):
             'Refund Amount',
         ])
 
-<<<<<<< HEAD
         # values_list() returns plain tuples: no model instances are built and
         # no related objects are fetched per row. This is the main CSV cost.
        
@@ -2597,21 +1571,6 @@ def admin_dashboard_export_csv(request):
             export_qs
             .order_by('id')
             .values_list(
-=======
-        bookings = (
-            Booking.objects
-            .filter(
-                booked_at__gte=start,
-                booked_at__lt=end,
-            )
-            .select_related(
-                'user',
-                'movie',
-                'theater',
-                'seat',
-            )
-            .only(
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
                 'id',
                 'user__username',
                 'movie__name',
@@ -2622,7 +1581,6 @@ def admin_dashboard_export_csv(request):
                 'refund_status',
                 'refund_amount',
             )
-<<<<<<< HEAD
             .iterator(chunk_size=5000)
         )
 
@@ -2640,26 +1598,6 @@ def admin_dashboard_export_csv(request):
                 _csv_safe(is_cancelled),
                 _csv_safe(refund_status),
                 _csv_safe(refund_amount if refund_amount is not None else ''),
-=======
-            .order_by('id')
-            .iterator(chunk_size=2000)
-        )
-
-        for booking in bookings:
-
-            yield writer.writerow([
-                booking.id,
-                booking.user.username,
-                booking.movie.name,
-                booking.theater.name,
-                booking.seat.seat_number,
-                booking.booked_at.strftime(
-                    '%Y-%m-%d %H:%M'
-                ),
-                booking.is_cancelled,
-                booking.refund_status,
-                booking.refund_amount or '',
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
             ])
 
     response = StreamingHttpResponse(

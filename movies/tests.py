@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ﻿import hashlib
 import csv
 import hmac
@@ -1656,8 +1655,3 @@ class DiscoveryCountEndpointTests(TestCase):
 
 
 
-=======
-from django.test import TestCase
-
-# Create your tests here.
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b

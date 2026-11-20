@@ -2,13 +2,9 @@ from io import BytesIO
 
 import qrcode
 from django.conf import settings
-<<<<<<< HEAD
 from django.core import signing
 from django.urls import reverse
 from django.utils import timezone
-=======
-from django.urls import reverse
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -23,7 +19,6 @@ from reportlab.platypus import (
 )
 
 
-<<<<<<< HEAD
 TICKET_VERIFY_SALT = "bookmyseat.ticket.verify"
 
 
@@ -41,8 +36,6 @@ def is_valid_verify_token(token, booking_id):
         return False
 
 
-=======
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 def generate_ticket_pdf(payment, bookings):
     """
     Generate one PDF ticket for a successful payment.
@@ -134,11 +127,8 @@ def generate_ticket_pdf(payment, bookings):
             "verify_ticket",
             kwargs={"booking_id": first_booking.id},
         )
-<<<<<<< HEAD
         + "?t="
         + make_verify_token(first_booking.id)
-=======
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
     )
 
     qr = qrcode.make(verification_url)
@@ -157,7 +147,6 @@ def generate_ticket_pdf(payment, bookings):
     # TICKET DETAILS
     # --------------------------------------------------------
 
-<<<<<<< HEAD
     
     def cell_text(value):
         """Create a wrapping PDF cell for long text."""
@@ -194,47 +183,11 @@ def generate_ticket_pdf(payment, bookings):
             ),
         ],
         ["Amount", cell_text(f"INR {payment.amount}")],
-=======
-    details = [
-        ["Movie", movie.name],
-        ["Theater", theater.name],
-        ["Screen", theater.screen],
-        [
-            "Show Time",
-            theater.time.strftime(
-                "%d %B %Y, %I:%M %p"
-            ),
-        ],
-        [
-            "Seats",
-            ", ".join(
-                booking.seat.seat_number
-                for booking in bookings
-            ),
-        ],
-        [
-            "Booking ID(s)",
-            ", ".join(
-                str(booking.id)
-                for booking in bookings
-            ),
-        ],
-        [
-            "Payment Reference",
-            payment.razorpay_payment_id
-            or payment.razorpay_order_id,
-        ],
-        [
-            "Amount",
-            f"₹{payment.amount}",
-        ],
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
     ]
 
     table = Table(
         details,
         colWidths=[45 * mm, 105 * mm],
-<<<<<<< HEAD
         repeatRows=0,
     )
 
@@ -255,77 +208,6 @@ def generate_ticket_pdf(payment, bookings):
 
     story.append(table)
     story.append(Spacer(1, 10 * mm))
-=======
-    )
-
-    table.setStyle(
-        TableStyle(
-            [
-                (
-                    "BACKGROUND",
-                    (0, 0),
-                    (0, -1),
-                    colors.HexColor("#eeeeee"),
-                ),
-                (
-                    "TEXTCOLOR",
-                    (0, 0),
-                    (0, -1),
-                    colors.black,
-                ),
-                (
-                    "FONTNAME",
-                    (0, 0),
-                    (0, -1),
-                    "Helvetica-Bold",
-                ),
-                (
-                    "FONTNAME",
-                    (1, 0),
-                    (1, -1),
-                    "Helvetica",
-                ),
-                (
-                    "FONTSIZE",
-                    (0, 0),
-                    (-1, -1),
-                    10,
-                ),
-                (
-                    "GRID",
-                    (0, 0),
-                    (-1, -1),
-                    0.5,
-                    colors.grey,
-                ),
-                (
-                    "VALIGN",
-                    (0, 0),
-                    (-1, -1),
-                    "MIDDLE",
-                ),
-                (
-                    "TOPPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    7,
-                ),
-                (
-                    "BOTTOMPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    7,
-                ),
-            ]
-        )
-    )
-
-    story.append(table)
-
-    story.append(
-        Spacer(1, 10 * mm)
-    )
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 
     # --------------------------------------------------------
     # QR CODE SECTION

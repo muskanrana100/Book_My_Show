@@ -1,20 +1,12 @@
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from .forms import UserRegisterForm, UserUpdateForm
 from django.shortcuts import render,redirect
-<<<<<<< HEAD
 from django.contrib.auth import login,authenticate, update_session_auth_hash
-=======
-from django.contrib.auth import login,authenticate
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
 from django.contrib.auth.decorators import login_required
 from movies.models import Movie , Booking, Payment
 
 def home(request):
-<<<<<<< HEAD
     movies = Movie.objects.filter(is_published=True)
-=======
-    movies= Movie.objects.all()
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
     return render(request,'home.html',{'movies':movies})
 def register(request):
     if request.method == 'POST':
@@ -61,15 +53,10 @@ def reset_password(request):
     if request.method == 'POST':
         form=PasswordChangeForm(user=request.user,data=request.POST)
         if form.is_valid():
-<<<<<<< HEAD
             user = form.save()
             # Keep the user signed in after the password change.
             update_session_auth_hash(request, user)
             return redirect('profile')
-=======
-            form.save()
-            return redirect('login')
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
     else:
         form=PasswordChangeForm(user=request.user)
     return render(request,'users/reset_password.html',{'form':form})

@@ -1,5 +1,4 @@
 from django import forms
-<<<<<<< HEAD
 from django.core.exceptions import ValidationError
 
 from .models import Movie, Review, ReviewReport
@@ -63,33 +62,11 @@ class ReviewReportForm(forms.ModelForm):
         }),
     )
 
-=======
-from .models import Review, ReviewReport
-
-class ReviewForm(forms.ModelForm):
-    class Meta:
-        model = Review
-        fields = ['rating', 'title','body']
-        widgets = {
-            'rating': forms.RadioSelect(),
-            'title': forms.TextInput(attrs ={
-                'class': "form-control",
-                'placeholder':'Sum up your review in a few words'}),
-            'body': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 4,
-                'placeholder': 'What did you think of the movie?',
-            }),
-       }
-       
-class ReviewReportForm(forms.ModelForm):
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
     class Meta:
         model = ReviewReport
         fields = ['reason', 'note']
         widgets = {
             'reason': forms.Select(attrs={'class': 'form-control'}),
-<<<<<<< HEAD
         }
 
 
@@ -118,9 +95,3 @@ class MovieAdminForm(forms.ModelForm):
                 'or the 11-character video ID. Other links are not accepted.'
             )
         return video_id
-=======
-            'note': forms.Textarea(attrs={
-                'class': 'form-control', 'rows': 2, 'placeholder': 'Optional details',
-            }),
-        }
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b

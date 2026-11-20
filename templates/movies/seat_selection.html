@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 {% extends "users/basic.html" %} {% block content %}
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <div class="container py-4">
@@ -10,18 +9,6 @@
   <div id="holdTimerBox" class="alert alert-info d-none" role="alert">
     Seats reserved for <strong><span id="holdTimer">02:00</span> </strong> -
     complete payment before time runs out
-=======
-{% extends "users/basic.html" %}
-{% block content %}
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<div class=" container py-4">
-  <h2 class="mb-1">{{theater.movie.name}}</h2>
-  <p class="text-muted">{{theater.name}} &middot; {{theater.time|date:"d M Y, h:i A"}}</p>
-
-  <div id="holdTimerBox" class="alert alert-info d-none" role="alert">
-    Seats reserved for <strong><span id="holdTimer">02:00</span>
-    </strong> - complete payment before time runs out
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
   </div>
 
   <div id="errorBox" class="alert alert-danger d-none" role="alert"></div>
@@ -29,7 +16,6 @@
   <div class="card mb-4">
     <div class="card-body">
       <div class="text-center text-muted mb-3">All eyes this way please!</div>
-<<<<<<< HEAD
       <div
         id="seatGrid"
         class="d-flex flex-wrap justify-content-center"
@@ -48,19 +34,6 @@
           <span
             ><span class="legend-box legend-held"></span>Held by others</span
           >
-=======
-      <div id="seatGrid" class="d-flex flex-wrap justify-content-center" style="gap: 10px;">
-        {% for seat in seats %}
-        <button type="button" class="seat-btn" data-seat-id="{{seat.id}}" data-status="{{seat.display_status}}">
-          {{seat.seat_number}}</button>
-        {% endfor %}
-      </div>
-      <div>
-        <div class="d-flex justify-content-center mt-4" style="gap:20px;">
-          <span><span class="legend-box legend-available"></span>Available</span>
-          <span><span class="legend-box legend-selected"></span>Selected</span>
-          <span><span class="legend-box legend-held"></span>Held by others</span>
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
           <span><span class="legend-box legend-booked"></span>Booked</span>
         </div>
       </div>
@@ -72,7 +45,6 @@
         <div>Selected seats: <strong id="selectedCount">0</strong></div>
         <div>Total: &#8377;<strong id="totalPrice">0</strong></div>
       </div>
-<<<<<<< HEAD
       <button
         id="confirmBtn"
         type="button"
@@ -80,10 +52,6 @@
         disabled
       >
         Confirm &amp; Pay
-=======
-      <button id="confirmBtn" type="button" class="btn btn-success btn-lg " disabled> Confirm &amp; Pay
-
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
       </button>
     </div>
   </div>
@@ -91,7 +59,6 @@
 
 {% csrf_token %}
 <style>
-<<<<<<< HEAD
   body {
     font-family: Arial, sans-serif;
   }
@@ -147,73 +114,10 @@
   .footer .social-icons i {
     font-size: 20px;
     margin: 0 10px;
-=======
-  .seat-btn {
-    width: 48px;
-    height: 48px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    background: #fff;
-    font-size: 13px;
-    cursor: pointer;
-  }
-
-  .seat-btn[data-status="available"] {
-    background: #fff;
-    border-color: #28a745;
-    color: #28a745;
-  }
-
-  .seat-btn[data-status="held_by_you"] {
-    background: #28a745;
-    border-color: #28a745;
-    color: #fff;
-  }
-
-  .seat-btn[data-status="held"] {
-    background: #f0ad4e;
-    border-color: #f0ad4e;
-    color: #fff;
-    cursor: not-allowed;
-  }
-
-  .seat-btn[data-status="booked"] {
-    background: #6c757d;
-    border-color: #6c757d;
-    color: #fff;
-    cursor: not-allowed;
-  }
-
-  .legend-box {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border-radius: 3px;
-    margin-right: 4px;
-    vertical-align: middle;
-  }
-
-  .legend-available {
-    background: #fff;
-    border: 1px solid #28a745;
-  }
-
-  .legend-selected {
-    background: #28a745;
-  }
-
-  .legend-held {
-    background: #f0ad4e;
-  }
-
-  .legend-booked {
-    background: #6c757d;
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
   }
 </style>
 
 <script>
-<<<<<<< HEAD
     (function () {
     const theaterId = {{ theater.id }};
     const pricePerSeat = {{ theater.price_per_seat }};
@@ -477,193 +381,3 @@
   }) ();
 </script>
 {% endblock %}
-=======
-  (function () {
-  const theaterId = {{ theater.id }};
-  const pricePerSeat = {{ theater.price_per_seat }};
-  const csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
-
-  const seatGrid = document.getElementById('seatGrid');
-  const confirmBtn = document.getElementById('confirmBtn');
-  const selectedCountE1 = document.getElementById('selectedCount');
-  const totalPriceE1 = document.getElementById('totalPrice');
-  const errorBox = document.getElementById('errorBox');
-  const holdTimerBox = document.getElementById('holdTimerBox');
-  const holdTimerE1 = document.getElementById('holdTimer');
-
-  let heldUntilMap = {};
-
-  function showError(message) {
-    errorBox.textContent = message;
-    errorBox.classList.remove('d-none');
-    setTimeout(() => errorBox.classList.add('d-none'), 5000);
-  }
-  function updateSummary() {
-    const mySeats = seatGrid.querySelectorAll('[data-status="held_by_you"]');
-    selectedCountE1.textContent = mySeats.length;
-    totalPriceE1.textContent = (mySeats.length * pricePerSeat).toFixed(2);
-    confirmBtn.disabled = mySeats.length === 0;
-  }
-
-  async function postJson(url) {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'X-CSRFToken': csrfToken },
-    });
-    const data = await response.json();
-    return { ok: response.ok, data };
-  }
-
-  async function holdSeat(seatId) {
-    const { ok, data } = await postJson(`/movies/theater/${theaterId}/seats/${seatId}/hold/`);
-    if (!ok) {
-      showError(data.reason || 'Could not hold this seat.');
-      refreshStatuses();
-      return;
-    }
-    heldUntilMap[seatId] = data.held_until;
-    setSeatStatus(seatId, "held_by_you");
-    updateSummary();
-    startCountdown();
-  }
-
-  async function releaseSeat(seat_Id) {
-    const { ok } = await postJson(`/movies/theater/${theaterId}/seats/${seat_Id}/release/`);
-    if (ok) {
-      delete heldUntilMap[seat_Id];
-      setSeatStatus(seat_Id, 'available');
-      updateSummary();
-    }
-  }
-
-  function setSeatStatus(seatId, status) {
-    const btn = seatGrid.querySelector(`[data-seat-id="${seatId}"]`);
-    if (btn) btn.dataset.status = status;
-  }
-
-  seatGrid.addEventListener('click', (e) => {
-    const btn = e.target.closest('.seat-btn');
-    if (!btn) return;
-    const seatId = btn.dataset.seatId;
-    const status = btn.dataset.status;
-    if (status === 'available') {
-      holdSeat(seatId);
-    }
-    else if (status === 'held_by_you') {
-      releaseSeat(seatId);
-    }
-  });
-
-  confirmBtn.addEventListener('click', async () => {
-    confirmBtn.disabled = true;
-    const { ok, data } = await postJson(`/movies/theater/${theaterId}/payment/create/`);
-    if (!ok || !data.success) {
-      showError(data.reason || 'Could not start payment. Please try again');
-      confirmBtn.disabled = false;
-      refreshStatuses();
-      return;
-    }
-
-    const options = {
-      key: data.key_id,
-      amount: data.amount_paise,
-      currency: data.currency,
-      name: 'Bookmyseat',
-      description: data.movie_name,
-      order_id: data.order_id,
-      prefill: {
-        email: data.user_email,
-      },
-
-      handler: async function (response) {
-        const verifyResponse = await fetch('/movies/payment/verify/', {
-          method: 'POST',
-          headers: {
-            'X-CSRFToken': csrfToken,
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: new URLSearchParams({
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
-          }),
-        });
-        const verifyData = await verifyResponse.json();
-        if (verifyResponse.ok && verifyData.success) {
-          window.location.href = verifyData.redirect_url;
-        } else {
-          showError(verifyData.reason || 'Payment verification failed. Please contact support.');
-          confirmBtn.disabled = false;
-        }
-      },
-      modal: {
-        ondismiss: async function () {
-          await postJson(`/movies/theater/${theaterId}/payment/cancel/`);
-          showError('Payment cancelled. Your seats are still held — you can try again.');
-          confirmBtn.disabled = false;
-        },
-      },
-      theme: {
-        color: '#28a745',
-      },
-    };
-
-    const razorpayCheckout = new Razorpay(options);
-    razorpayCheckout.on('payment.failed', async function (response) {
-      showError(response.error.description || 'Payment failed. Please try again.');
-      confirmBtn.disabled = false;
-      refreshStatuses();
-    });
-    razorpayCheckout.open();
-  });
-
-
-  async function refreshStatuses() {
-    const response = await fetch(`/movies/theater/${theaterId}/seats/status/`);
-    const data = await response.json();
-    data.seats.forEach((seat) => {
-      setSeatStatus(seat.id, seat.status);
-      if (seat.status !== 'held_by_you') {
-        delete heldUntilMap[seat.id];
-      }
-    });
-    updateSummary();
-  }
-  let countdownInterval = null;
-
-  function startCountdown() {
-    holdTimerBox.classList.remove('d-none');
-    if (countdownInterval) return;
-    countdownInterval = setInterval(() => {
-      const times = Object.values(heldUntilMap).map((t) => new Date(t).getTime());
-      if (times.length === 0) {
-        holdTimerBox.classList.add('d-none');
-        clearInterval(countdownInterval);
-        countdownInterval = null;
-        return;
-      }
-      const earliest = Math.min(...times);
-      const remainingMs = earliest - Date.now();
-      if (remainingMs <= 0) {
-        showError('Your seat hold expired. Please select your seats again.');
-        heldUntilMap = {};
-
-        refreshStatuses();
-        holdTimerBox.classList.add('d-none');
-        clearInterval(countdownInterval);
-        countdownInterval = null;
-        return;
-      }
-      const totalSeconds = Math.floor(remainingMs / 1000);
-      const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
-      const seconds = String(totalSeconds % 60).padStart(2, '0');
-      holdTimerE1.textContent = `${minutes}:${seconds}`;
-    }, 1000);
-  }
-
-  setInterval(refreshStatuses, 5000);
-  updateSummary();
-}) ();
-</script>
-{% endblock %}
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b

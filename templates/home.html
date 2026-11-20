@@ -130,11 +130,7 @@
         <a href="{% url 'movie_detail' movie.slug %}" class="text-decoration-none">
           <div class="card h-100">
             <img
-<<<<<<< HEAD
               src="{{ movie.poster_url }}"
-=======
-              src="{{ movie.image.url }}"
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
               class="card-img-top"
               alt="{{ movie.name }}"
               height="300"
@@ -392,11 +388,7 @@
 <ul>
     {% for movie in movies%}
     <li>
-<<<<<<< HEAD
         <img src="{{ movie.poster_url }}" alt="image" >
-=======
-        <img src="{{movie.image.url}}" alt="image" >
->>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
         <strong>{{movie.name}}</strong>{{movie.rating}}
         <p>Cast:{{movie.cast}}</p>
         <a href="{% url 'theater_list' movie.id %}">View Theaters</a>
