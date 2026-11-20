@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Ticket Verification</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            margin-bottom: 25px;
+            color: #222;
+        }
+
+        .success {
+            background: #d1e7dd;
+            color: #0f5132;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+
+        .danger {
+            background: #f8d7da;
+            color: #842029;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+
+        p {
+            padding: 8px 0;
+            margin: 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        strong {
+            display: inline-block;
+            width: 180px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <h2>Ticket Verification</h2>
+
+        {% if is_valid %}
+
+            <div class="success">
+                ✓ Ticket is valid
+            </div>
+
+        {% else %}
+
+            <div class="danger">
+                ✗ Ticket is invalid or cancelled
+            </div>
+
+        {% endif %}
+
+        <p>
+            <strong>Booking ID:</strong>
+            {{ booking.id }}
+        </p>
+
+        <p>
+            <strong>Movie:</strong>
+            {{ booking.movie.name }}
+        </p>
+
+        <p>
+            <strong>Theater:</strong>
+            {{ booking.theater.name }}
+        </p>
+
+        <p>
+            <strong>Screen:</strong>
+            {{ booking.theater.screen }}
+        </p>
+
+        <p>
+            <strong>Show Time:</strong>
+            {{ booking.theater.time|date:"d M Y, h:i A" }}
+        </p>
+
+        <p>
+            <strong>Seat:</strong>
+            {{ booking.seat.seat_number }}
+        </p>
+
+        {% if booking.payment %}
+
+        <p>
+            <strong>Payment Reference:</strong>
+            {{ booking.payment.razorpay_payment_id }}
+        </p>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+</html>

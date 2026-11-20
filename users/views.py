@@ -1,0 +1,75 @@
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
+from .forms import UserRegisterForm, UserUpdateForm
+from django.shortcuts import render,redirect
+<<<<<<< HEAD
+from django.contrib.auth import login,authenticate, update_session_auth_hash
+=======
+from django.contrib.auth import login,authenticate
+>>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
+from django.contrib.auth.decorators import login_required
+from movies.models import Movie , Booking, Payment
+
+def home(request):
+<<<<<<< HEAD
+    movies = Movie.objects.filter(is_published=True)
+=======
+    movies= Movie.objects.all()
+>>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
+    return render(request,'home.html',{'movies':movies})
+def register(request):
+    if request.method == 'POST':
+        form=UserRegisterForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username=form.cleaned_data.get('username')
+            password=form.cleaned_data.get('password1')
+            user=authenticate(username=username,password=password)
+            login(request,user)
+            return redirect('profile')
+    else:
+        form=UserRegisterForm()
+    return render(request,'users/register.html',{'form':form})
+
+def login_view(request):
+    if request.method == 'POST':
+        form=AuthenticationForm(request,data=request.POST)
+        if form.is_valid():
+            user=form.get_user()
+            login(request,user)
+            return redirect('/')
+    else:
+        form=AuthenticationForm()
+    return render(request,'users/login.html',{'form':form})
+
+@login_required
+def profile(request):
+    bookings= Booking.objects.filter(user=request.user).select_related('movie','seat')
+    payments= Payment.objects.filter(user=request.user).select_related('theater','theater__movie').prefetch_related('seats')
+
+    if request.method == 'POST':
+        u_form = UserUpdateForm(request.POST, instance=request.user)
+        if u_form.is_valid():
+            u_form.save()
+            return redirect('profile')
+    else:
+        u_form = UserUpdateForm(instance=request.user)
+
+    return render(request, 'users/profile.html', {'u_form': u_form,'bookings':bookings, 'payments':payments})
+
+@login_required
+def reset_password(request):
+    if request.method == 'POST':
+        form=PasswordChangeForm(user=request.user,data=request.POST)
+        if form.is_valid():
+<<<<<<< HEAD
+            user = form.save()
+            # Keep the user signed in after the password change.
+            update_session_auth_hash(request, user)
+            return redirect('profile')
+=======
+            form.save()
+            return redirect('login')
+>>>>>>> 19f2abe696f078951ad52f1702885481f8b54c4b
+    else:
+        form=PasswordChangeForm(user=request.user)
+    return render(request,'users/reset_password.html',{'form':form})

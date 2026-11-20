@@ -1,0 +1,298 @@
+/* Enhancement layer. Loaded AFTER the base inline styles. Base <style> blocks are untouched. */
+
+.seat-btn { width: 48px;
+    height: 48px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: #fff;
+    font-size: 13px;
+    cursor: pointer; }
+
+.seat-btn[data-status="available"] { background: #fff;
+    border-color: #28a745;
+    color: #28a745; }
+
+.seat-btn[data-status="held_by_you"] { background: #28a745;
+    border-color: #28a745;
+    color: #fff; }
+
+.seat-btn[data-status="held"] { background: #f0ad4e;
+    border-color: #f0ad4e;
+    color: #fff;
+    cursor: not-allowed; }
+
+.seat-btn[data-status="booked"] { background: #6c757d;
+    border-color: #6c757d;
+    color: #fff;
+    cursor: not-allowed; }
+
+.legend-box { display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    margin-right: 4px;
+    vertical-align: middle; }
+
+.legend-available { background: #fff;
+    border: 1px solid #28a745; }
+
+.legend-selected { background: #28a745; }
+
+.legend-held { background: #f0ad4e; }
+
+.legend-booked { background: #6c757d; }
+
+/* movie list additions (previously a second inline style block) */
+#loadingOverlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.75);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #loadingOverlay.active {
+        display: flex;
+    }
+
+    .loadingBox {
+        background: white;
+        padding: 25px 35px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+/* ==========================================================================
+   ENHANCEMENT LAYER (new). Presentation only; the base styles above are unchanged.
+   ========================================================================== */
+
+:root {
+  --bms-accent: #e50914;
+  --bms-accent-dark: #b20710;
+  --bms-ink: #1d2129;
+  --bms-muted: #6b7280;
+  --bms-line: #e5e7eb;
+  --bms-radius: 10px;
+  --bms-shadow: 0 6px 18px rgba(17, 19, 26, 0.10);
+  --bms-shadow-hover: 0 14px 30px rgba(17, 19, 26, 0.18);
+}
+
+/* ---- Thumbnails --------------------------------------------------------- */
+.card-img-top,
+img.movie-poster {
+  aspect-ratio: 2 / 3;
+  width: 100%;
+  height: auto !important;
+  object-fit: cover;
+  background: linear-gradient(160deg, #2b2f3a, #11131a);
+  transition: transform 0.35s ease, opacity 0.35s ease;
+}
+
+img.poster-loading {
+  opacity: 0.35;
+}
+
+.card:hover .card-img-top {
+  transform: scale(1.03);
+}
+
+img.rounded.shadow-sm,
+.movie-detail-poster {
+  border-radius: var(--bms-radius);
+  box-shadow: var(--bms-shadow);
+}
+
+/* ---- Cards -------------------------------------------------------------- */
+.card {
+  border: 1px solid var(--bms-line);
+  border-radius: var(--bms-radius);
+  overflow: hidden;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.card:hover {
+  box-shadow: var(--bms-shadow-hover);
+  transform: translateY(-2px);
+}
+
+.card-body {
+  padding: 0.9rem 1rem;
+}
+
+.card-title {
+  font-weight: 600;
+  color: var(--bms-ink);
+  line-height: 1.25;
+}
+
+/* ---- Buttons ------------------------------------------------------------ */
+.btn {
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease, color 0.2s ease;
+  touch-action: manipulation;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible,
+a:focus-visible,
+button:focus-visible,
+.form-control:focus-visible {
+  outline: 3px solid rgba(229, 9, 20, 0.45);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background-color: var(--bms-accent);
+  border-color: var(--bms-accent);
+  box-shadow: 0 4px 12px rgba(229, 9, 20, 0.25);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--bms-accent-dark);
+  border-color: var(--bms-accent-dark);
+  box-shadow: 0 6px 16px rgba(229, 9, 20, 0.35);
+}
+
+.btn-primary:disabled,
+.btn:disabled {
+  opacity: 0.55;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.btn-group-actions > .btn + .btn,
+.action-row > * + * {
+  margin-left: 0.5rem;
+}
+
+/* ---- Options: selects, inputs, toggles ---------------------------------- */
+.form-control,
+.custom-select {
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus,
+.custom-select:focus {
+  border-color: var(--bms-accent);
+  box-shadow: 0 0 0 0.2rem rgba(229, 9, 20, 0.15);
+}
+
+.form-check-input {
+  cursor: pointer;
+}
+
+/* ---- Detail-page chips and meta ------------------------------------------ */
+.badge {
+  border-radius: 999px;
+  padding: 0.35em 0.7em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.movie-meta-chip {
+  display: inline-block;
+  margin: 0 0.35rem 0.35rem 0;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: var(--bms-ink);
+  font-size: 0.85rem;
+}
+
+.section-title {
+  position: relative;
+  padding-left: 0.75rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.section-title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.2em;
+  bottom: 0.2em;
+  width: 4px;
+  border-radius: 2px;
+  background: var(--bms-accent);
+}
+
+/* ---- Seat map states (classes used by seat_selection.html) -------------- */
+.seat-btn {
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.seat-btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.seat-btn:focus-visible {
+  outline: 3px solid rgba(229, 9, 20, 0.5);
+  outline-offset: 2px;
+}
+
+/* ---- Alerts -------------------------------------------------------------- */
+.alert {
+  border-radius: var(--bms-radius);
+  border-width: 1px;
+  transition: opacity 0.4s ease;
+}
+
+/* ---- Responsive -------------------------------------------------------- */
+@media (max-width: 767.98px) {
+  .btn-lg {
+    width: 100%;
+    padding: 0.7rem 1rem;
+  }
+
+  .card-body {
+    padding: 0.75rem 0.85rem;
+  }
+
+  .section-title {
+    font-size: 1.15rem;
+  }
+
+  .movie-meta-chip {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .action-row > * {
+    width: 100%;
+    margin-left: 0 !important;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* ---- Motion preferences ------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
